@@ -50,78 +50,7 @@ Copy structures ('.pdb') of interest into working directory
 Substages are also available for troubleshooting, and custom stages can be built as needed.
 
 """
-
-import os,sys,argparse,shutil,random
-
-current_directory = os.getcwd()
-
-
-
-"""PROGRAM LOCATIONS"""
-cobretti_program = '/work/LAS/wmoss-lab/scripts/cobretti.py'
-ScanFold_program = '/work/LAS/wmoss-lab/scripts/ScanFold.py'
-cmbuilder_program = '/work/LAS/wmoss-lab/scripts/labtools/cm-builder'
-RScape_program = '/work/LAS/wmoss-lab/programs/rscape_v2.0.0.k/bin/R-scape'
-Perl_directory = '/work/LAS/wmoss-lab/programs/lib/perl5/'
-RNAFramework_directory = '/work/LAS/wmoss-lab/programs/RNAFramework/lib/'
-Knotty_program = '/work/LAS/wmoss-lab/programs/knotty/knotty'
-HFold_program = '/work/LAS/wmoss-lab/programs/hfold/HFold_iterative'
-SimRNA_directory = '/work/LAS/wmoss-lab/programs/SimRNA'
-QRNAS_program = '/work/LAS/wmoss-lab/programs/qrnas/QRNA'
-QRNAS_ff = '/work/LAS/wmoss-lab/programs/qrnas/forcefield'
-ARES_program = '/work/LAS/wmoss-lab/programs/ares'
-ARES_environment = '/work/LAS/wmoss-lab/programs/envs/ares'
-fpocket_program = '/work/LAS/wmoss-lab/programs/fpocket2/bin/fpocket'
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-stage',type=str,default='0',help='input stage number to run')
-parser.add_argument('-email',type=str,default='',help='input email address')
-
-parser.add_argument('-i',type=str,default='',help='input list of fasta accession numbers (stage 1A)')
-parser.add_argument('-seq',type=str,default=current_directory,help='input location of fasta sequences')
-parser.add_argument('-db',type=str,default=current_directory,help='input location of BLAST sequence files')
-parser.add_argument('-dbn',type=str,default=current_directory,help='input location of fasta sequences')
-parser.add_argument('-pk',type=str,default=current_directory,help='input location of pseudoknot motifs')
-parser.add_argument('-set_dbn_extend',type=bool,default=True,help='extend pseudoknot motifs')
-
-parser.add_argument('-cobretti',type=str,default=cobretti_program,help='input location of cobretti.py')
-parser.add_argument('-sf',type=str,default=ScanFold_program,help='input location of ScanFold.py')
-parser.add_argument('-cmb',type=str,default=cmbuilder_program,help='input location of cm-builder')
-parser.add_argument('-rs',type=str,default=RScape_program,help='input location of R-Scape')
-parser.add_argument('-perl',type=str,default=Perl_directory,help='input location of Perl directory (perl5) (for R-Scape)')
-parser.add_argument('-rf',type=str,default=RNAFramework_directory,help='input location of RNAFramework directory (RNAFramework/lib/) (for R-Scape)')
-parser.add_argument('-ky',type=str,default=Knotty_program,help='input location of Knotty (knotty)')
-parser.add_argument('-hf',type=str,default=HFold_program,help='input location of Iterative HFold (HFold_iterative)')
-parser.add_argument('-sim',type=str,default=SimRNA_directory,help='input location of SimRNA directory')
-parser.add_argument('-qrnas',type=str,default=QRNAS_program,help='input location of QRNAS')
-parser.add_argument('-qrnasff',type=str,default=QRNAS_ff,help='input location of QRNAS force field')
-parser.add_argument('-ares',type=str,default=ARES_program,help='input location of ARES')
-parser.add_argument('-aresenv',type=str,default=ARES_environment,help='input location of ARES conda environment')
-parser.add_argument('-fpocket',type=str,default=fpocket_program,help='input location of fpocket')
-
-args = parser.parse_args()
-fasta_list = args.i
-stage = args.stage
-email = args.email
-seq_dir = args.seq
-db_dir = args.db
-dbn_dir = args.dbn
-pk_dir = args.pk
-set_dbn_extend = args.set_dbn_extend
-cobretti_prog = args.cobretti
-scanfold_prog = args.sf
-cmbuilder_prog = args.cmb
-rscape_prog = args.rs
-perl_prog = args.perl
-rnaframework_dir = args.rf
-knotty_prog = args.ky
-hfold_prog = args.hf
-simrna_dir = args.sim
-qrnas_prog = args.qrnas
-qrnas_ff = args.qrnasff
-ares_prog = args.ares
-ares_env = args.aresenv
-fpocket_prog = args.fpocket
+import os,sys,argparse,shutil,random,subprocess
 
 
 
@@ -174,6 +103,7 @@ def shell_build_start(filename,job,email,time=3,nodes=1,mem=0,tasks=1,notify='AL
             writefile.writelines('module load py-biopython\n')
             writefile.writelines('module load python\n')
         writefile.writelines('\n')
+
 
 def fasta_build(filename,sequence_directory,email): #read a text file of accession numbers, download associated fasta files
     with open(filename,'r') as readfile:
@@ -329,105 +259,101 @@ def dbn_extend(dbn_directory,dbn_readfile,sequence_directory,dbn_writefile='exte
         writefile.writelines('.'*five_prime_filler+dbn_structure+'.'*three_prime_filler+'\n')
 
 def pk_fold(knotty_program,hfold_program,dbn_readfile='extended.dbn',pk_writefile='tmppk.txt'): #Fold dbn motifs and output to single textfile
-    import subprocess
-    i = 0
-    with open(pk_writefile,'w',newline='\n') as writefile:
-        with open(dbn_readfile,'r') as readfile:
-            lines = readfile.readlines()
-            for line in lines:
-                if line[0] =='>':
-                    dbn_header = str(lines[i]).rstrip()
-                    dbn_sequence  = str(lines[i+1]).rstrip()
-                    dbn_structure = str(lines[i+2]).rstrip()
-                    left_pos = 0
-                    right_pos = len(dbn_sequence)
-                    nucleotides = ('A','C','G','U')
-                    left_brackets = ('(','[','{','<')
-                    right_brackets = (')',']','}','>')
-                    for i in range(left_pos,right_pos):
-                        if dbn_sequence[left_pos] in nucleotides:
-                            break
-                        elif dbn_structure[left_pos] in left_brackets:
-                            break
-                        else:
-                            left_pos += 1
-                    for j in range(right_pos,left_pos),-1):
-                        if dbn_sequence[right_pos - 1] in nucleotides:
-                            break
-                        elif dbn_structure[right_pos - 1] in right_brackets:
-                            break
-                        else:
-                            right_pos -= 1
-                    dbn_sequence = dbn_sequence[left_pos:right_pos]
-                    dbn_structure = dbn_structure[left_pos:right_pos]
-                    while dbn_sequence.__contains__('N'):
-                        dbn_sequence = dbn_sequence.replace('N',random.choice(nucleotides),1)
-                        continue
-                    while dbn_sequence.__contains__('B'):
-                        b_nucleotides = ('C','G','U')
-                        dbn_sequence = dbn_sequence.replace('B',random.choice(b_nucleotides),1)
-                        continue
-                    while dbn_sequence.__contains__('D'):
-                        d_nucleotides = ('A','G','U')
-                        dbn_sequence = dbn_sequence.replace('D',random.choice(d_nucleotides),1)
-                        continue
-                    while dbn_sequence.__contains__('H'):
-                        h_nucleotides = ('A','C','U')
-                        dbn_sequence = dbn_sequence.replace('H',random.choice(h_nucleotides),1)
-                        continue
-                    while dbn_sequence.__contains__('V'):
-                        v_nucleotides = ('A','C','G')
-                        dbn_sequence = dbn_sequence.replace('V',random.choice(v_nucleotides),1)
-                        continue
-                    while dbn_sequence.__contains__('K'):
-                        k_nucleotides = ('G','U')
-                        dbn_sequence = dbn_sequence.replace('K',random.choice(k_nucleotides),1)
-                        continue
-                    while dbn_sequence.__contains__('M'):
-                        m_nucleotides = ('A','C')
-                        dbn_sequence = dbn_sequence.replace('M',random.choice(m_nucleotides),1)
-                        continue
-                    while dbn_sequence.__contains__('R'):
-                        r_nucleotides = ('A','G')
-                        dbn_sequence = dbn_sequence.replace('R',random.choice(r_nucleotides),1)
-                        continue
-                    while dbn_sequence.__contains__('S'):
-                        s_nucleotides = ('C','G')
-                        dbn_sequence = dbn_sequence.replace('S',random.choice(s_nucleotides),1)
-                        continue
-                    while dbn_sequence.__contains__('W'):
-                        w_nucleotides = ('A','U')
-                        dbn_sequence = dbn_sequence.replace('W',random.choice(w_nucleotides),1)
-                        continue
-                    while dbn_sequence.__contains__('Y'):
-                        y_nucleotides = ('C','U')
-                        dbn_sequence = dbn_sequence.replace('Y',random.choice(y_nucleotides),1)
-                        continue
-                    writefile.writelines(dbn_header+' ScanFold\n')
-                    writefile.writelines(dbn_sequence+'\n')
-                    writefile.writelines(dbn_structure+'\n')
-                    writefile.writelines(dbn_header+' Knotty\n')
-                    #writefile.writelines(dbn_sequence+'\n') #Knotty writes own sequence line
-                    knotty_input = str('%s %s' % (knotty_program,dbn_sequence))
-                    #print(knotty_input)
-                    writefile.flush()
-                    knotty = subprocess.run(knotty_input,stdout=writefile,shell=True)
-                    writefile.writelines(dbn_header+' HFold\n')
-                    #writefile.writelines(dbn_sequence+'\n') #HFold writes own sequence line
-                    blank_structure = str('_'*len(dbn_sequence)) #HFold requires '_' instead of '.' to fold properly
-                    hfold_blank_input = str('%s --s "%s" --r "%s"' % (hfold_program,dbn_sequence,blank_structure))
-                    #print(hfold_blank_input)
-                    writefile.flush()
-                    hfold_only = subprocess.run(hfold_blank_input,stdout=writefile,shell=True)                       
-                    writefile.writelines(dbn_header+' HFold ScanFold\n')
-                    # writefile.writelines(dbn_sequence+'\n') #HFold writes own sequence line
-                    hfold_input = str('%s --s "%s" --r "%s"' % (hfold_program,dbn_sequence,dbn_structure.replace('.','_'))) #HFold requires '_' instead of '.' to fold properly
-                    #print(hfold_input)
-                    writefile.flush()
-                    hfold = subprocess.run(hfold_input,stdout=writefile,shell=True)
-                    i += 1
-                else:
-                    i += 1
+    with open(pk_writefile,'w',newline='\n') as writefile, open(dbn_readfile,'r') as readfile:
+        i = 0
+        lines = readfile.readlines()
+        for line_index, line in enumerate(lines):
+            if (line_index + 3) >= len(lines):
+                break
+            print("first character in line: " + str(line[0]))
+            if line[0] =='>':
+                dbn_header = str(lines[i]).rstrip()
+                dbn_sequence  = str(lines[i+1]).rstrip()
+                dbn_structure = str(lines[i+2]).rstrip()
+                left_pos = 0
+                right_pos = len(dbn_sequence)
+                nucleotides = ('A','C','G','U')
+                left_brackets = ('(','[','{','<')
+                right_brackets = (')',']','}','>')
+                nucleotide_codes = {
+                    "N": ('A','C','G','U'),
+                    "B": ('C','G','U'),
+                    "D": ('A','G','U'),
+                    "H": ('A','C','U'),
+                    "V": ('A','C','G'),
+                    "K": ('G','U'),
+                    "M": ('A','C'),
+                    "R": ('A','G'),
+                    "S": ('C','G'),
+                    "W": ('A','U'),
+                    "Y": ('C','U')
+                                   }
+                print("dbn_sequence:  " + dbn_sequence)
+                print("dbn_structure: " + dbn_structure)
+                if dbn_sequence[0] == '>' or dbn_structure[0] == '>':
+                    continue
+                for k,j in enumerate(dbn_sequence):
+                    print("index: " + str(k))
+                    print("item:  " + j)
+                    if j in nucleotides or dbn_structure[k] in left_brackets:
+                        left_pos = k
+                        break
+
+                for k,j in reversed(list(enumerate(dbn_sequence))):
+                    if j in nucleotides or dbn_structure[k] in right_brackets:
+                        right_pos -= k
+                        break
+  
+                dbn_sequence = dbn_sequence[left_pos:right_pos]
+                dbn_structure = dbn_structure[left_pos:right_pos]
+
+                new_sequence = ""
+                for k in dbn_sequence:
+                    if k in nucleotide_codes:
+                        new_sequence += random.choice(nucleotide_codes[k])
+
+                    else:
+                        new_sequence += k
+                dbn_sequence = new_sequence
+
+                writefile.writelines(dbn_header+' ScanFold\n')
+                writefile.writelines(dbn_sequence+'\n')
+                writefile.writelines(dbn_structure+'\n')
+                writefile.writelines(dbn_header+' Knotty\n')
+                #writefile.writelines(dbn_sequence+'\n') #Knotty writes own sequence line
+                knotty_input = str('%s %s' % (knotty_program,dbn_sequence))
+                #print(knotty_input)
+                writefile.flush()
+                knotty = subprocess.run(knotty_input,stdout=writefile,shell=True)
+                writefile.writelines(dbn_header+' HFold\n')
+                #writefile.writelines(dbn_sequence+'\n') #HFold writes own sequence line
+                blank_structure = str('_'*len(dbn_sequence)) #HFold requires '_' instead of '.' to fold properly
+                hfold_blank_input = str('%s --s "%s" --r "%s"' % (hfold_program,dbn_sequence,blank_structure))
+                #print(hfold_blank_input)
+                writefile.flush()
+                hfold_only = subprocess.run(hfold_blank_input,stdout=writefile,shell=True)                       
+                writefile.writelines(dbn_header+' HFold ScanFold\n')
+                # writefile.writelines(dbn_sequence+'\n') #HFold writes own sequence line
+                hfold_input = str('%s --s "%s" --r "%s"' % (hfold_program,dbn_sequence,dbn_structure.replace('.','_'))) #HFold requires '_' instead of '.' to fold properly
+                #print(hfold_input)
+                writefile.flush()
+                hfold = subprocess.run(hfold_input,stdout=writefile,shell=True)
+                i += 1
+            else:
+                i += 1
+                
+                
+    
+def replace_nucleotide_codes_with_random_nucleotide(sequence, codes):
+    new_sequence = ""
+    for k in sequence:
+        if k in codes:
+            new_sequence += random.choice(codes[k])
+
+        else:
+            new_sequence += k
+    return new_sequence
+                
 
 def pk_cleanup(pk_readfile='tmppk.txt',pk_writefile='pk_clean.txt'): #Clean up pseudoknot file for easier visual comparison and breakdown
     i = 0
@@ -1243,159 +1169,235 @@ def AnnapuRNA_run():
     print('WIP')
 
 
+def main():
 
-"""STAGES"""
-if email == '':
-    print('No email provided, use "-email" to define string. Exiting...')
-    sys.exit()
-if stage == '0':
-    print('No stage specified, use "-stage" to define string (e.g., "1A"). Exiting...')
-    sys.exit()
     
-if stage == '1A':
-    if seq_dir == current_directory:
-        folder_make(seq_dir,'sequences')
-        seq_dir = os.path.join(seq_dir,'sequences')
-    if fasta_list != '':
-        fasta_build(fasta_list,seq_dir,email)
+    current_directory = os.getcwd()
+    
+    
+    
+    """PROGRAM LOCATIONS"""
+    cobretti_program = '/work/LAS/wmoss-lab/scripts/cobretti.py'
+    ScanFold_program = '/work/LAS/wmoss-lab/scripts/ScanFold.py'
+    cmbuilder_program = '/work/LAS/wmoss-lab/scripts/labtools/cm-builder'
+    RScape_program = '/work/LAS/wmoss-lab/programs/rscape_v2.0.0.k/bin/R-scape'
+    Perl_directory = '/work/LAS/wmoss-lab/programs/lib/perl5/'
+    RNAFramework_directory = '/work/LAS/wmoss-lab/programs/RNAFramework/lib/'
+    Knotty_program = '/work/LAS/wmoss-lab/programs/knotty/knotty'
+    HFold_program = '/work/LAS/wmoss-lab/programs/hfold/HFold_iterative'
+    SimRNA_directory = '/work/LAS/wmoss-lab/programs/SimRNA'
+    QRNAS_program = '/work/LAS/wmoss-lab/programs/qrnas/QRNA'
+    QRNAS_ff = '/work/LAS/wmoss-lab/programs/qrnas/forcefield'
+    ARES_program = '/work/LAS/wmoss-lab/programs/ares'
+    ARES_environment = '/work/LAS/wmoss-lab/programs/envs/ares'
+    fpocket_program = '/work/LAS/wmoss-lab/programs/fpocket2/bin/fpocket'
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-stage',type=str,default='0',help='input stage number to run')
+    parser.add_argument('-email',type=str,default='',help='input email address')
+    
+    parser.add_argument('-i',type=str,default='',help='input list of fasta accession numbers (stage 1A)')
+    parser.add_argument('-seq',type=str,default=current_directory,help='input location of fasta sequences')
+    parser.add_argument('-db',type=str,default=current_directory,help='input location of BLAST sequence files')
+    parser.add_argument('-dbn',type=str,default=current_directory,help='input location of fasta sequences')
+    parser.add_argument('-pk',type=str,default=current_directory,help='input location of pseudoknot motifs')
+    parser.add_argument('-set_dbn_extend',type=bool,default=True,help='extend pseudoknot motifs')
+    
+    parser.add_argument('-cobretti',type=str,default=cobretti_program,help='input location of cobretti.py')
+    parser.add_argument('-sf',type=str,default=ScanFold_program,help='input location of ScanFold.py')
+    parser.add_argument('-cmb',type=str,default=cmbuilder_program,help='input location of cm-builder')
+    parser.add_argument('-rs',type=str,default=RScape_program,help='input location of R-Scape')
+    parser.add_argument('-perl',type=str,default=Perl_directory,help='input location of Perl directory (perl5) (for R-Scape)')
+    parser.add_argument('-rf',type=str,default=RNAFramework_directory,help='input location of RNAFramework directory (RNAFramework/lib/) (for R-Scape)')
+    parser.add_argument('-ky',type=str,default=Knotty_program,help='input location of Knotty (knotty)')
+    parser.add_argument('-hf',type=str,default=HFold_program,help='input location of Iterative HFold (HFold_iterative)')
+    parser.add_argument('-sim',type=str,default=SimRNA_directory,help='input location of SimRNA directory')
+    parser.add_argument('-qrnas',type=str,default=QRNAS_program,help='input location of QRNAS')
+    parser.add_argument('-qrnasff',type=str,default=QRNAS_ff,help='input location of QRNAS force field')
+    parser.add_argument('-ares',type=str,default=ARES_program,help='input location of ARES')
+    parser.add_argument('-aresenv',type=str,default=ARES_environment,help='input location of ARES conda environment')
+    parser.add_argument('-fpocket',type=str,default=fpocket_program,help='input location of fpocket')
+    
+    args = parser.parse_args()
+    fasta_list = args.i
+    stage = args.stage
+    email = args.email
+    seq_dir = args.seq
+    db_dir = args.db
+    dbn_dir = args.dbn
+    pk_dir = args.pk
+    set_dbn_extend = args.set_dbn_extend
+    cobretti_prog = args.cobretti
+    scanfold_prog = args.sf
+    cmbuilder_prog = args.cmb
+    rscape_prog = args.rs
+    perl_prog = args.perl
+    rnaframework_dir = args.rf
+    knotty_prog = args.ky
+    hfold_prog = args.hf
+    simrna_dir = args.sim
+    qrnas_prog = args.qrnas
+    qrnas_ff = args.qrnasff
+    ares_prog = args.ares
+    ares_env = args.aresenv
+    fpocket_prog = args.fpocket
+
+    """STAGES"""
+    if email == '':
+        print('No email provided, use "-email" to define string. Exiting...')
+        sys.exit()
+    if stage == '0':
+        print('No stage specified, use "-stage" to define string (e.g., "1A"). Exiting...')
+        sys.exit()
+    
+    if stage == '1A':
+        if seq_dir == current_directory:
+            folder_make(seq_dir,'sequences')
+            seq_dir = os.path.join(seq_dir,'sequences')
+        if fasta_list != '':
+            fasta_build(fasta_list,seq_dir,email)
+        else:
+            all_files = os.listdir(current_directory)
+            for filename in all_files:
+                if filename.endswith('.fa') or filename.endswith('.fasta'):
+                    try:
+                        shutil.move(os.path.join(current_directory,filename),os.path.join(seq_dir,filename))
+                    except:
+                        pass
+        ScanFold_prep(seq_dir,scanfold_prog,email)
+        ScanFold_run()
+        if db_dir == current_directory:
+            folder_make(db_dir,'databases')
+            db_dir = os.path.join(db_dir,'databases')
+        blast_prep(seq_dir,db_dir,email)
+        blast_run()
+    elif stage == '1AA':
+        print('1AA: '+stage)
+        if seq_dir == current_directory:
+            folder_make(seq_dir,'sequences')
+            seq_dir = os.path.join(seq_dir,'sequences')
+        if fasta_list != '':
+            fasta_build(fasta_list,seq_dir,email)
+        else:
+            all_files = os.listdir(current_directory)
+            for filename in all_files:
+                if filename.endswith('.fa') or filename.endswith('.fasta'):
+                    try:
+                        shutil.move(os.path.join(current_directory,filename),os.path.join(seq_dir,filename))
+                    except:
+                        pass
+        ScanFold_prep(seq_dir,scanfold_prog,email)
+        ScanFold_run()
+    elif stage == '1AB':
+        if seq_dir == current_directory:
+            seq_dir = folder_check(seq_dir,'sequences')
+        if db_dir == current_directory:
+            folder_make(db_dir,'databases')
+            db_dir = os.path.join(db_dir,'databases')
+        blast_prep(seq_dir,db_dir,email)
+        blast_run()
+        
+    elif stage == '1B':
+        if seq_dir == current_directory:
+            seq_dir = folder_check(seq_dir,'sequences')
+        if db_dir == current_directory:
+            db_dir = folder_check(db_dir,'databases')
+        if dbn_dir == current_directory:
+            folder_make(dbn_dir,'motifs')
+            dbn_dir = os.path.join(dbn_dir,'motifs')
+        blast_cleanup(db_dir,dbn_dir)
+        if pk_dir == current_directory:
+            folder_make(pk_dir,'pk_motifs')
+            pk_dir = os.path.join(pk_dir,'pk_motifs')
+        if set_dbn_extend == True:
+            extend_motifs(seq_dir,dbn_dir)
+        pk_fold(knotty_prog,hfold_prog)
+        pk_cleanup()
+        pk_breakdown(pk_dir)
+        cmbuilder_prep(seq_dir,db_dir,pk_dir,cmbuilder_prog,perl_prog,rnaframework_dir,email,rscape_prog,cobretti_prog)
+        cmbuilder_run()
+    elif stage == '1BA':
+        if seq_dir == current_directory:
+            seq_dir = folder_check(seq_dir,'sequences')
+        if db_dir == current_directory:
+            db_dir = folder_check(db_dir,'databases')
+        if dbn_dir == current_directory:
+            folder_make(dbn_dir,'motifs')
+            dbn_dir = os.path.join(dbn_dir,'motifs')
+        blast_cleanup(db_dir,dbn_dir)
+    elif stage == '1BB':
+        if seq_dir == current_directory:
+            seq_dir = folder_check(seq_dir,'sequences')
+        if dbn_dir == current_directory:
+            dbn_dir = folder_check(dbn_dir,'motifs')
+        if pk_dir == current_directory:
+            folder_make(pk_dir,'pk_motifs')
+            pk_dir = os.path.join(pk_dir,'pk_motifs')
+        if set_dbn_extend == True: #set_dbn_extend to False if 'extended.dbn' was made correctly but pks failed
+            extend_motifs(seq_dir,dbn_dir)
+        pk_fold(knotty_prog,hfold_prog)
+        pk_cleanup()
+        pk_breakdown(pk_dir)
+    elif stage == '1BC': #Substages in case of run failure after PK files are made (usually due to mismatch in db/dbn/fasta file locations/naming convention)
+        if seq_dir == current_directory:
+            seq_dir = folder_check(seq_dir,'sequences')
+        if db_dir == current_directory:
+            db_dir = folder_check(db_dir,'databases')
+        if pk_dir == current_directory:
+            pk_dir = folder_check(pk_dir,'pk_motifs')
+        cmbuilder_prep(seq_dir,db_dir,pk_dir,cmbuilder_prog,perl_prog,rnaframework_dir,email,rscape_prog,cobretti_prog)
+        cmbuilder_run()
+    
+    elif stage == '1C':
+        cmbuilder_cleanup()
+    elif stage == '1CA': #Substage to finish cleanup upon conclusion of R-Scape run
+        cmbuilder_cleanup2()
+    
+    elif stage == '2A':
+        SimRNA_prep(simrna_dir,email)
+        SimRNA_run()
+    elif stage == '2AA':
+        SimRNA_prep(simrna_dir,email)
+    elif stage == '2AB':
+        SimRNA_run()
+    
+    elif stage == '2B':
+        SimRNA_cleanup()
+        QRNAS_prep(qrnas_prog,qrnas_ff,email)
+        QRNAS_run()
+    elif stage == '2BA':
+        SimRNA_cleanup()
+    elif stage == '2BB':
+        QRNAS_prep(qrnas_prog,qrnas_ff,email)
+    elif stage == '2BC':
+        QRNAS_run()
+    
+    elif stage == '2C':
+        QRNAS_cleanup()
+        ARES_prep(ares_prog,ares_env,email)
+        ARES_run()
+    elif stage == '2CA':
+        QRNAS_cleanup()
+    elif stage == '2CB':
+        ARES_prep(ares_prog,ares_env)
+        ARES_run()
+    
+    elif stage == '2D': #Separated out to avoid ARES reading fpocket .pdb files in subdirectories and to allow for final stage cleanup
+        fpocket_run(fpocket_prog)
+        fpocket_cleanup()
+        fpocket_read()
+    
+    elif stage == '3A':
+        dock6_prep()
+        dock6_run()
+        
+    elif stage == '3B':
+        AnnapuRNA_run()
+    
     else:
-        all_files = os.listdir(current_directory)
-        for filename in all_files:
-            if filename.endswith('.fa') or filename.endswith('.fasta'):
-                try:
-                    shutil.move(os.path.join(current_directory,filename),os.path.join(seq_dir,filename))
-                except:
-                    pass
-    ScanFold_prep(seq_dir,scanfold_prog,email)
-    ScanFold_run()
-    if db_dir == current_directory:
-        folder_make(db_dir,'databases')
-        db_dir = os.path.join(db_dir,'databases')
-    blast_prep(seq_dir,db_dir,email)
-    blast_run()
-elif stage == '1AA':
-    print('1AA: '+stage)
-    if seq_dir == current_directory:
-        folder_make(seq_dir,'sequences')
-        seq_dir = os.path.join(seq_dir,'sequences')
-    if fasta_list != '':
-        fasta_build(fasta_list,seq_dir,email)
-    else:
-        all_files = os.listdir(current_directory)
-        for filename in all_files:
-            if filename.endswith('.fa') or filename.endswith('.fasta'):
-                try:
-                    shutil.move(os.path.join(current_directory,filename),os.path.join(seq_dir,filename))
-                except:
-                    pass
-    ScanFold_prep(seq_dir,scanfold_prog,email)
-    ScanFold_run()
-elif stage == '1AB':
-    if seq_dir == current_directory:
-        seq_dir = folder_check(seq_dir,'sequences')
-    if db_dir == current_directory:
-        folder_make(db_dir,'databases')
-        db_dir = os.path.join(db_dir,'databases')
-    blast_prep(seq_dir,db_dir,email)
-    blast_run()
-    
-elif stage == '1B':
-    if seq_dir == current_directory:
-        seq_dir = folder_check(seq_dir,'sequences')
-    if db_dir == current_directory:
-        db_dir = folder_check(db_dir,'databases')
-    if dbn_dir == current_directory:
-        folder_make(dbn_dir,'motifs')
-        dbn_dir = os.path.join(dbn_dir,'motifs')
-    blast_cleanup(db_dir,dbn_dir)
-    if pk_dir == current_directory:
-        folder_make(pk_dir,'pk_motifs')
-        pk_dir = os.path.join(pk_dir,'pk_motifs')
-    if set_dbn_extend == True:
-        extend_motifs(seq_dir,dbn_dir)
-    pk_fold(knotty_prog,hfold_prog)
-    pk_cleanup()
-    pk_breakdown(pk_dir)
-    cmbuilder_prep(seq_dir,db_dir,pk_dir,cmbuilder_prog,perl_prog,rnaframework_dir,email,rscape_prog,cobretti_prog)
-    cmbuilder_run()
-elif stage == '1BA':
-    if seq_dir == current_directory:
-        seq_dir = folder_check(seq_dir,'sequences')
-    if db_dir == current_directory:
-        db_dir = folder_check(db_dir,'databases')
-    if dbn_dir == current_directory:
-        folder_make(dbn_dir,'motifs')
-        dbn_dir = os.path.join(dbn_dir,'motifs')
-    blast_cleanup(db_dir,dbn_dir)
-elif stage == '1BB':
-    if seq_dir == current_directory:
-        seq_dir = folder_check(seq_dir,'sequences')
-    if dbn_dir == current_directory:
-        dbn_dir = folder_check(dbn_dir,'motifs')
-    if pk_dir == current_directory:
-        folder_make(pk_dir,'pk_motifs')
-        pk_dir = os.path.join(pk_dir,'pk_motifs')
-    if set_dbn_extend == True: #set_dbn_extend to False if 'extended.dbn' was made correctly but pks failed
-        extend_motifs(seq_dir,dbn_dir)
-    pk_fold(knotty_prog,hfold_prog)
-    pk_cleanup()
-    pk_breakdown(pk_dir)
-elif stage == '1BC': #Substages in case of run failure after PK files are made (usually due to mismatch in db/dbn/fasta file locations/naming convention)
-    if seq_dir == current_directory:
-        seq_dir = folder_check(seq_dir,'sequences')
-    if db_dir == current_directory:
-        db_dir = folder_check(db_dir,'databases')
-    if pk_dir == current_directory:
-        pk_dir = folder_check(pk_dir,'pk_motifs')
-    cmbuilder_prep(seq_dir,db_dir,pk_dir,cmbuilder_prog,perl_prog,rnaframework_dir,email,rscape_prog,cobretti_prog)
-    cmbuilder_run()
+        print('Incorrect stage specified, use "-stage" to define string (e.g., "1A"). Exiting...')
+        sys.exit()
 
-elif stage == '1C':
-    cmbuilder_cleanup()
-elif stage == '1CA': #Substage to finish cleanup upon conclusion of R-Scape run
-    cmbuilder_cleanup2()
-
-elif stage == '2A':
-    SimRNA_prep(simrna_dir,email)
-    SimRNA_run()
-elif stage == '2AA':
-    SimRNA_prep(simrna_dir,email)
-elif stage == '2AB':
-    SimRNA_run()
-
-elif stage == '2B':
-    SimRNA_cleanup()
-    QRNAS_prep(qrnas_prog,qrnas_ff,email)
-    QRNAS_run()
-elif stage == '2BA':
-    SimRNA_cleanup()
-elif stage == '2BB':
-    QRNAS_prep(qrnas_prog,qrnas_ff,email)
-elif stage == '2BC':
-    QRNAS_run()
-
-elif stage == '2C':
-    QRNAS_cleanup()
-    ARES_prep(ares_prog,ares_env,email)
-    ARES_run()
-elif stage == '2CA':
-    QRNAS_cleanup()
-elif stage == '2CB':
-    ARES_prep(ares_prog,ares_env)
-    ARES_run()
-
-elif stage == '2D': #Separated out to avoid ARES reading fpocket .pdb files in subdirectories and to allow for final stage cleanup
-    fpocket_run(fpocket_prog)
-    fpocket_cleanup()
-    fpocket_read()
-
-elif stage == '3A':
-    dock6_prep()
-    dock6_run()
-    
-elif stage == '3B':
-    AnnapuRNA_run()
-
-else:
-    print('Incorrect stage specified, use "-stage" to define string (e.g., "1A"). Exiting...')
-    sys.exit()
+            
+if __name__ == "__main__":
+    main()
