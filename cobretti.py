@@ -216,16 +216,18 @@ def blast_cleanup(db_directory,dbn_directory):
                 except:
                     pass
 
-def extend_motifs(sequence_directory,dbn_directory):
+def extend_motifs(sequence_directory,dbn_directory,dbn_writefile='extended.dbn'):
+    open(dbn_writefile,'w',newline='\n')
     all_files = os.listdir(dbn_directory)
     for filename in all_files:
         try:
             if filename.endswith('.dbn') and filename.split('_')[-2] == 'motif':
-                dbn_extend(dbn_directory,filename,sequence_directory)
+                dbn_extend(dbn_directory,filename,sequence_directory,dbn_writefile)
         except:
             continue
 
-def dbn_extend(dbn_directory,dbn_readfile,sequence_directory,dbn_writefile='extended.dbn'): #Extends ScanFold DBN motifs by 30 nts on each side
+def dbn_extend(dbn_directory,dbn_readfile,sequence_directory,dbn_writefile): #Extends ScanFold DBN motifs by 30 nts on each side
+    from Bio import SeqIO
     with open(os.path.join(dbn_directory,dbn_readfile),'r') as readfile:
         dbn_lines = readfile.readlines()
         tag = dbn_readfile.split('_')[0]
@@ -235,10 +237,9 @@ def dbn_extend(dbn_directory,dbn_readfile,sequence_directory,dbn_writefile='exte
     all_files = os.listdir(sequence_directory)
     for filename in all_files:
         if filename.startswith(tag) and (filename.endswith('.fa') or filename.endswith('.fasta')):
-            with open(os.path.join(sequence_directory,filename),'r') as readfile:
-                seq_lines = readfile.readlines()
-                sequence = seq_lines[1]
-                seq_start = sequence.find(dbn_sequence)
+            for record in SeqIO.parse(os.path.join(sequence_directory,filename),'fasta'):
+                fasta_sequence = str(record.seq).replace('T','U')
+                seq_start = fasta_sequence.find(dbn_sequence)
                 seq_length = len(dbn_sequence)
                 seq_end = seq_start + seq_length
                 if seq_start < 30:
@@ -247,15 +248,15 @@ def dbn_extend(dbn_directory,dbn_readfile,sequence_directory,dbn_writefile='exte
                 else:
                     dbn_start = seq_start - 30
                     five_prime_filler = 30
-                if seq_end + 30 > len(sequence):
-                    dbn_end = len(sequence)
+                if seq_end + 30 > len(fasta_sequence):
+                    dbn_end = len(fasta_sequence)
                     three_prime_filler = dbn_end - seq_end
                 else:
                     dbn_end = seq_end + 30
                     three_prime_filler = 30
     with open(dbn_writefile,'a+',newline='\n') as writefile:
         writefile.writelines(dbn_header+'\n')
-        writefile.writelines(sequence[dbn_start:dbn_end]+'\n')
+        writefile.writelines(fasta_sequence[dbn_start:dbn_end]+'\n')
         writefile.writelines('.'*five_prime_filler+dbn_structure+'.'*three_prime_filler+'\n')
 
 def pk_fold(knotty_program,hfold_program,dbn_readfile='extended.dbn',pk_writefile='tmppk.txt'): #Fold dbn motifs and output to single textfile
@@ -265,7 +266,7 @@ def pk_fold(knotty_program,hfold_program,dbn_readfile='extended.dbn',pk_writefil
         for line_index, line in enumerate(lines):
             if (line_index + 3) >= len(lines):
                 break
-            print("first character in line: " + str(line[0]))
+            #print("first character in line: " + str(line[0]))
             if line[0] =='>':
                 dbn_header = str(lines[i]).rstrip()
                 dbn_sequence  = str(lines[i+1]).rstrip()
@@ -288,25 +289,33 @@ def pk_fold(knotty_program,hfold_program,dbn_readfile='extended.dbn',pk_writefil
                     "W": ('A','U'),
                     "Y": ('C','U')
                                    }
-                print("dbn_sequence:  " + dbn_sequence)
-                print("dbn_structure: " + dbn_structure)
+                #print("dbn_sequence:  " + dbn_sequence)
+                #print("dbn_structure: " + dbn_structure)
                 if dbn_sequence[0] == '>' or dbn_structure[0] == '>':
                     continue
+                if not dbn_sequence[0].isalnum():
+                    continue
+                if not (dbn_structure[0] == '.' or dbn_structure[0] in left_brackets or dbn_structure[0] in right_brackets):
+                    continue
                 for k,j in enumerate(dbn_sequence):
-                    print("index: " + str(k))
-                    print("item:  " + j)
+                    #print("index: " + str(k))
+                    #print("item:  " + j)
                     if j in nucleotides or dbn_structure[k] in left_brackets:
                         left_pos = k
+                        print('k left = '+str(left_pos))
                         break
 
-                for k,j in reversed(list(enumerate(dbn_sequence))):
+                for k,j in enumerate(dbn_sequence[::-1]):
                     if j in nucleotides or dbn_structure[k] in right_brackets:
                         right_pos -= k
+                        print('k right = '+str(right_pos))
                         break
-  
                 dbn_sequence = dbn_sequence[left_pos:right_pos]
                 dbn_structure = dbn_structure[left_pos:right_pos]
-
+                print("final left position: "+str(left_pos))
+                print("final right position: "+str(right_pos))
+                print("dbn_sequence:  " + dbn_sequence)
+                print("dbn_structure: " + dbn_structure)
                 new_sequence = ""
                 for k in dbn_sequence:
                     if k in nucleotide_codes:
