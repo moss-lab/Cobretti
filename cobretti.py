@@ -129,7 +129,7 @@ def ScanFold_prep(sequence_directory,scanfold_directory,email): #Makes shell scr
         if filename.endswith('.fa') or filename.endswith('.fasta'):
             with open(os.path.join(sequence_directory,filename),'r') as readfile:
                 lines = readfile.readlines()
-                name = lines[0].rstrip().replace('.','-').strip('>').split(' ')[0]
+                name = lines[0].rstrip().replace('.','-').replace('_','-').strip('>').split(' ')[0]
             shell_build_start('scanfold'+str(count)+'.sh','scanfold_'+name,email,notify='END,FAIL')
             with open('scanfold'+str(count)+'.sh','a',newline='\n') as writefile:
                 writefile.writelines('python %s %s --name %s --global_refold &\n' % (scanfold_directory,os.path.join(sequence_directory,filename),name))
@@ -303,7 +303,7 @@ def pk_fold(knotty_program,hfold_program,dbn_readfile='extended.dbn',pk_writefil
                     if j in nucleotides or (dbn_structure[::-1])[k] in right_brackets:
                         right_pos -= k
                         break
-  
+                    
                 dbn_sequence = dbn_sequence[left_pos:right_pos]
                 dbn_structure = dbn_structure[left_pos:right_pos]
 
@@ -754,9 +754,11 @@ def cmbuilder_prep(seq_directory,db_directory,dbn_directory,cmbuilder_program,pe
             print('Error with pseudoknot motif file(s), check DBN files in /pk_motifs directory and then run stage 1BC')
             sys.exit()
     for dbn_filename in all_dbn_files:
+        print("dbn_filename: " + str(dbn_filename))
         if dbn_filename.endswith('.dbn'):
             gene = dbn_filename.split('_')[0]
             dbn_file = str(os.path.join(dbn_directory,dbn_filename))
+            print("current_size: " + str(current_size))
             if current_size == 0:
                 shell_build_start(cm_writefile+str(count)+'.sh',cm_writefile+str(count),email,mem=100,tasks=20,notify='END,FAIL')
                 with open(cm_writefile+str(count)+'.sh','a',newline='\n') as writefile:
@@ -764,12 +766,15 @@ def cmbuilder_prep(seq_directory,db_directory,dbn_directory,cmbuilder_program,pe
                     writefile.writelines('export PERL5LIB='+rnaframework_directory+'\n')
             with open(cm_writefile+str(count)+'.sh','a',newline='\n') as writefile:
                 for seq_filename in all_seq_files:
-                    if seq_filename.startswith(gene) and seq_filename.endswith('.fa'):
+                    print("seq_filename: " + str(seq_filename))
+                    if seq_filename.startswith(gene) and (seq_filename.endswith('.fa') or seq_filename.endswith('.fasta')):
                         seq_file = str(os.path.join(seq_directory,seq_filename))
                         for db_filename in all_db_files:
+                            print("db_filename: " + str(db_filename))
                             if db_filename.startswith(gene) and db_filename.endswith('_db.fa'):
                                 db_file = str(os.path.join(db_directory,db_filename))
                                 db_size = int(os.path.getsize(db_file))
+                                print("db_size and max_db_size: " + str(db_size) + " " + str(max_db_size))
                                 if db_size > max_db_size:
                                     oversize_db_count = 1
                                     while os.path.isfile(cm_writefile+'_'+gene+str(oversize_db_count)+'.sh'):
@@ -1283,7 +1288,11 @@ def main():
             for filename in all_files:
                 if filename.endswith('.fa') or filename.endswith('.fasta'):
                     try:
-                        shutil.move(os.path.join(current_directory,filename),os.path.join(seq_dir,filename))
+                        
+                        with open(os.path.join(current_directory,filename),'r') as readfile:
+                            stage_1AA_lines = readfile.readlines()
+                            stage_1AA_name = stage_1AA_lines[0].rstrip().replace('.','-').replace('_','-').strip('>').split(' ')[0]
+                        shutil.move(os.path.join(current_directory,filename),os.path.join(seq_dir,stage_1AA_name))
                     except:
                         pass
         ScanFold_prep(seq_dir,scanfold_prog,email)
