@@ -258,24 +258,23 @@ def dbn_extend(dbn_directory,dbn_readfile,sequence_directory,dbn_writefile): #Ex
         writefile.writelines(dbn_header+'\n')
         writefile.writelines(fasta_sequence[dbn_start:dbn_end]+'\n')
         writefile.writelines('.'*five_prime_filler+dbn_structure+'.'*three_prime_filler+'\n')
-
 def pk_fold(knotty_program,hfold_program,dbn_readfile='extended.dbn',pk_writefile='tmppk.txt'): #Fold dbn motifs and output to single textfile
     with open(pk_writefile,'w',newline='\n') as writefile, open(dbn_readfile,'r') as readfile:
         i = 0
-        lines = readfile.readlines()
+        lines = [line for line in readfile.readlines() if line.strip()]
         for line_index, line in enumerate(lines):
             if (line_index + 3) >= len(lines):
                 break
-            #print("first character in line: " + str(line[0]))
+            print("first character in line: " + str(line[0]))
             if line[0] =='>':
                 dbn_header = str(lines[i]).rstrip()
                 dbn_sequence  = str(lines[i+1]).rstrip()
                 dbn_structure = str(lines[i+2]).rstrip()
                 left_pos = 0
                 right_pos = len(dbn_sequence)
-                nucleotides = ('A','C','G','U')
-                left_brackets = ('(','[','{','<')
-                right_brackets = (')',']','}','>')
+                nucleotides = {'A','C','G','U'}
+                left_brackets = {'(','[','{','<'}
+                right_brackets = {')',']','}','>'}
                 nucleotide_codes = {
                     "N": ('A','C','G','U'),
                     "B": ('C','G','U'),
@@ -288,9 +287,7 @@ def pk_fold(knotty_program,hfold_program,dbn_readfile='extended.dbn',pk_writefil
                     "S": ('C','G'),
                     "W": ('A','U'),
                     "Y": ('C','U')
-                                   }
-                #print("dbn_sequence:  " + dbn_sequence)
-                #print("dbn_structure: " + dbn_structure)
+                                    }
                 if dbn_sequence[0] == '>' or dbn_structure[0] == '>':
                     continue
                 if not dbn_sequence[0].isalnum():
@@ -298,24 +295,18 @@ def pk_fold(knotty_program,hfold_program,dbn_readfile='extended.dbn',pk_writefil
                 if not (dbn_structure[0] == '.' or dbn_structure[0] in left_brackets or dbn_structure[0] in right_brackets):
                     continue
                 for k,j in enumerate(dbn_sequence):
-                    #print("index: " + str(k))
-                    #print("item:  " + j)
                     if j in nucleotides or dbn_structure[k] in left_brackets:
                         left_pos = k
-                        print('k left = '+str(left_pos))
                         break
 
                 for k,j in enumerate(dbn_sequence[::-1]):
-                    if j in nucleotides or dbn_structure[k] in right_brackets:
+                    if j in nucleotides or (dbn_structure[::-1])[k] in right_brackets:
                         right_pos -= k
-                        print('k right = '+str(right_pos))
                         break
+  
                 dbn_sequence = dbn_sequence[left_pos:right_pos]
                 dbn_structure = dbn_structure[left_pos:right_pos]
-                print("final left position: "+str(left_pos))
-                print("final right position: "+str(right_pos))
-                print("dbn_sequence:  " + dbn_sequence)
-                print("dbn_structure: " + dbn_structure)
+
                 new_sequence = ""
                 for k in dbn_sequence:
                     if k in nucleotide_codes:
