@@ -130,7 +130,7 @@ def ScanFold_prep(sequence_directory,scanfold_directory,email): #Makes shell scr
             with open(os.path.join(sequence_directory,filename),'r') as readfile:
                 lines = readfile.readlines()
                 name = lines[0].rstrip().replace('.','-').replace('_','-').strip('>').split(' ')[0]
-            shell_build_start('scanfold'+str(count)+'.sh','scanfold_'+name,email,notify='END,FAIL')
+            shell_build_start('scanfold'+str(count)+'.sh','scanfold_'+name,email,mem=10,notify='END,FAIL')
             with open('scanfold'+str(count)+'.sh','a',newline='\n') as writefile:
                 writefile.writelines('python %s %s --name %s --global_refold &\n' % (scanfold_directory,os.path.join(sequence_directory,filename),name))
                 writefile.writelines('wait;\n')
@@ -199,7 +199,7 @@ def blast_cleanup(db_directory,dbn_directory):
                         accession = line.rstrip().split('\t')[0]
                         sequence = line.rstrip().split('\t')[1]
                         writefile.writelines('>'+accession+'\n')
-                        writefile.writelines(sequence.replace('T','U')+'\n')
+                        writefile.writelines(sequence.replace('T','U').replace('-','')+'\n')
 #            if os.path.isfile(os.path.join(db_directory,db_filename)) == True:
 #                os.remove(os.path.join(db_directory,filename))
 #                os.remove(os.path.join(db_directory,single_line_filename))
