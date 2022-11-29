@@ -1266,7 +1266,10 @@ def main():
             for filename in all_files:
                 if filename.endswith('.fa') or filename.endswith('.fasta'):
                     try:
-                        shutil.move(os.path.join(current_directory,filename),os.path.join(seq_dir,filename))
+                        with open(os.path.join(current_directory,filename),'r') as readfile:
+                            stage_1A_lines = readfile.readlines()
+                            stage_1A_name = stage_1A_lines[0].rstrip().replace('.','-').replace('_','-').strip('>').split(' ')[0]
+                        shutil.move(os.path.join(current_directory,filename),os.path.join(seq_dir,stage_1A_name))
                     except:
                         pass
         ScanFold_prep(seq_dir,scanfold_prog,email)
@@ -1288,7 +1291,6 @@ def main():
             for filename in all_files:
                 if filename.endswith('.fa') or filename.endswith('.fasta'):
                     try:
-                        
                         with open(os.path.join(current_directory,filename),'r') as readfile:
                             stage_1AA_lines = readfile.readlines()
                             stage_1AA_name = stage_1AA_lines[0].rstrip().replace('.','-').replace('_','-').strip('>').split(' ')[0]
