@@ -1078,7 +1078,7 @@ def QRNAS_cleanup():
 def ARES_prep(ares_directory,ares_environment,email):
     current_directory = os.getcwd()
     qrnas_directory = folder_check(current_directory,'qrnas_models') # ARES runs on ALL PDBs within the directory provided - including subdirectories. If running ARES alone, isolate PDB files in a subdirectory to avoid running unoptimized models
-    shell_build_start('ares.sh','ares',email,nodes=8,notify='END,FAIL')
+    shell_build_start('ares.sh','ares',email,nodes=8,mem=10,notify='END,FAIL')
     with open('ares.sh','a',newline='\n') as writefile:
         writefile.writelines('conda activate '+ares_environment+'\n')
         writefile.writelines('cd '+ares_directory+'\n')
