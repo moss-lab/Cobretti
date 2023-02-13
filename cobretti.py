@@ -101,6 +101,7 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
             writefile.writelines('module load blast-plus\n')
             writefile.writelines('export BLASTDB=${NCBI_BLAST_DB_PATH}\n')
         elif job.startswith('cmbuilder'):
+            writefile.writelines('module load perl\n')
             writefile.writelines('module load infernal\n')
         elif job.startswith('rscape'):
             writefile.writelines('module load infernal\n')
