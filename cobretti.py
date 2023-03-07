@@ -104,12 +104,9 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
             writefile.writelines('module load perl\n')
             writefile.writelines('module load infernal\n')
         elif job.startswith('rscape'):
-            writefile.writelines('module load infernal\n')
             writefile.writelines('module load gcc\n')
             writefile.writelines('module load ghostscript\n')
             writefile.writelines('module load gnuplot\n')
-            writefile.writelines('module load py-biopython\n')
-            writefile.writelines('module load python\n')
         elif job.startswith('qrnas'):
             writefile.writelines('module load gcc\n')
         elif job.startswith('ares'):
@@ -818,7 +815,7 @@ def pk_splitter(dbn_directory, dbn_filename, dbn_header, dbn_sequence,
 
 
 def cmbuilder_prep(seq_directory, db_directory, dbn_directory, cmbuilder_program, perl_program, rnaframework_directory,
-                   email, rscape_program, cobretti_program,
+                   email, rscape_program, r2r_program, cobretti_program,
                    cm_writefile='cmbuilder'):  # Reads all dbn files and outputs a shell script for cm-builder, based on Vans code
     count = 1
     current_size = 0
@@ -840,7 +837,7 @@ def cmbuilder_prep(seq_directory, db_directory, dbn_directory, cmbuilder_program
             print("current_size: " + str(current_size))
             if current_size == 0:
                 shell_build_start(cm_writefile + '_' + str(count) + '.sh', cm_writefile + str(count), email, mem=100,
-                                  tasks=20, notify='END,FAIL')
+                                  tasks=20, notify='FAIL')
                 with open(cm_writefile + '_' + str(count) + '.sh', 'a', newline='\n') as writefile:
                     writefile.writelines('export PERL5LIB=' + perl_program + '\n')
                     writefile.writelines('export PERL5LIB=' + rnaframework_directory + '\n')
@@ -862,7 +859,7 @@ def cmbuilder_prep(seq_directory, db_directory, dbn_directory, cmbuilder_program
                                         oversize_db_count += 1
                                     shell_build_start(cm_writefile + '_' + gene + str(oversize_db_count) + '.sh',
                                                       cm_writefile + '_' + gene + str(oversize_db_count), email,
-                                                      mem=100, tasks=20, notify='END,FAIL')
+                                                      mem=100, tasks=20, notify='FAIL')
                                     with open(cm_writefile + '_' + gene + str(oversize_db_count) + '.sh', 'a',
                                               newline='\n') as oversize_writefile:
                                         oversize_writefile.writelines(
@@ -882,12 +879,15 @@ def cmbuilder_prep(seq_directory, db_directory, dbn_directory, cmbuilder_program
         writefile.writelines('wait;\n')
     shell_build_start('rscape.sh', 'rscape', email, time=1, notify='END,FAIL')
     with open('rscape.sh', 'a', newline='\n') as writefile:
-        writefile.writelines('export PERL5LIB=' + perl_program + '\n')
-        writefile.writelines('export PERL5LIB=' + rnaframework_directory + '\n')
+        #writefile.writelines('export PERL5LIB=' + perl_program + '\n')
+        #writefile.writelines('export PERL5LIB=' + rnaframework_directory + '\n')
         rscape_runs = 10
         writefile.writelines(
             'for f in *.stockholm; do ' + rscape_program + ' -s --ntree ' + str(rscape_runs) + ' $f; done\n')
-        writefile.writelines('gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=All.Rscape.pdf -dBATCH *.R2R.sto.pdf\n')
+        writefile.writelines('sed -i.bak "/#=GF R2R*/d" *.sto\n')
+        writefile.writelines(
+            'for g in *.sto; do ' + r2r_program + ' --disable-usage-warning $g $g $(basename $g sto)pdf; done\n')
+        writefile.writelines('gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=All.Rscape.pdf -dBATCH *.R2R.pdf\n')
         writefile.writelines('wait;\n')
         writefile.writelines('python ' + cobretti_program + ' -stage 1CA -email ' + email + ' &\n')
         writefile.writelines('wait;\n')
@@ -927,8 +927,7 @@ def cmbuilder_cleanup2(
         cm_writefile='covariance.txt'):  # Move remaining files into folders, write covariance power and output to file
     current_directory = os.getcwd()
     covariance_read(cm_writefile)
-    current_directory = os.getcwd()
-    folders = ['cm', 'cov', 'dbn', 'out', 'pdf', 'power', 'ps', 'sh', 'sto', 'stockholm', 'surv', 'svg']
+    folders = ['bak', 'cm', 'cov', 'dbn', 'out', 'pdf', 'power', 'ps', 'sh', 'sto', 'stockholm', 'surv', 'svg']
     for folder in folders:
         folder_make(current_directory, folder)
     all_files = os.listdir(current_directory)
@@ -1332,6 +1331,7 @@ def main():
     ScanFold2_environment = '/work/LAS/wmoss-lab/programs/envs/ScanFold2'
     cmbuilder_program = '/work/LAS/wmoss-lab/scripts/labtools/cm-builder'
     RScape_program = '/work/LAS/wmoss-lab/programs/rscape_v2.0.0.k/bin/R-scape'
+    R2R_program = '/work/LAS/wmoss-lab/programs/R2R-1.0.6/src/r2r'
     Perl_directory = '/work/LAS/wmoss-lab/programs/lib/perl5/'
     RNAFramework_directory = '/work/LAS/wmoss-lab/programs/RNAFramework/lib/'
     Knotty_program = '/work/LAS/wmoss-lab/programs/knotty/knotty'
@@ -1360,6 +1360,7 @@ def main():
     parser.add_argument('--sf2env', type=str, default=ScanFold2_environment, help='input location of ScanFold2.0 conda environment')
     parser.add_argument('-cmb', type=str, default=cmbuilder_program, help='input location of cm-builder')
     parser.add_argument('-rs', type=str, default=RScape_program, help='input location of R-Scape')
+    parser.add_argument('-r2r', type=str, default=R2R_program, help='input location of R2R')
     parser.add_argument('-perl', type=str, default=Perl_directory,
                         help='input location of Perl directory (perl5) (for R-Scape)')
     parser.add_argument('-rf', type=str, default=RNAFramework_directory,
@@ -1389,6 +1390,7 @@ def main():
     scanfold2_env = args.sf2env
     cmbuilder_prog = args.cmb
     rscape_prog = args.rs
+    r2r_prog = args.r2r
     perl_prog = args.perl
     rnaframework_dir = args.rf
     knotty_prog = args.ky
@@ -1522,7 +1524,7 @@ def main():
         pk_fold(knotty_prog, hfold_prog)
         pk_cleanup()
         pk_breakdown(pk_dir)
-        cmbuilder_prep(seq_dir, db_dir, pk_dir, cmbuilder_prog, perl_prog, rnaframework_dir, email, rscape_prog,
+        cmbuilder_prep(seq_dir, db_dir, pk_dir, cmbuilder_prog, perl_prog, rnaframework_dir, email, rscape_prog,r2r_prog,
                        cobretti_prog)
         cmbuilder_run()
     elif stage == '1BA':
@@ -1554,7 +1556,7 @@ def main():
             db_dir = folder_check(db_dir, 'databases')
         if pk_dir == current_directory:
             pk_dir = folder_check(pk_dir, 'pk_motifs')
-        cmbuilder_prep(seq_dir, db_dir, pk_dir, cmbuilder_prog, perl_prog, rnaframework_dir, email, rscape_prog,
+        cmbuilder_prep(seq_dir, db_dir, pk_dir, cmbuilder_prog, perl_prog, rnaframework_dir, email, rscape_prog,r2r_prog,
                        cobretti_prog)
         cmbuilder_run()
     elif stage == '1BC1':  # Substage to troubleshoot cmbuilder_prep
@@ -1564,7 +1566,7 @@ def main():
             db_dir = folder_check(db_dir, 'databases')
         if pk_dir == current_directory:
             pk_dir = folder_check(pk_dir, 'pk_motifs')
-        cmbuilder_prep(seq_dir, db_dir, pk_dir, cmbuilder_prog, perl_prog, rnaframework_dir, email, rscape_prog,
+        cmbuilder_prep(seq_dir, db_dir, pk_dir, cmbuilder_prog, perl_prog, rnaframework_dir, email, rscape_prog,r2r_prog,
                        cobretti_prog)
 
     elif stage == '1C':
