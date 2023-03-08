@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/python3
 """
   __    __     ______     ______     ______     __         ______     ______
  /\ "-./  \   /\  __ \   /\  ___\   /\  ___\   /\ \       /\  __ \   /\  == \
@@ -9,84 +8,372 @@
 
                                    COBRETTI
                "Does the job nobody wants" -Cobra (1986) trailer
+Automates redundant RNA bioinformatic tasks, saving valuable time and resources
 
-                Contact: Snake Peterson - jakemp@iastate.edu
+                  Contact: Snake Peterson - jakemp@iastate.edu
+                  or the Moss Lab: https://github.com/moss-lab
 
-Automation of redundant RNA bioinformatic tasks, saving valuable time and resources
 
 Required modules for Pronto/HPC users:
-module load py-biopython
-module load python
-
-Other modules will be added during shell script builds, see 'shell_build_start' function to verify
-Program locations will also need to be verified prior to the first run
+    py-biopython
+    python
 
 Use:
-python cobretti.py -stage # -email email@iastate.edu
-Valid stage numbers: 1A, 1B, 1C, 2A, 2B, 2C, 2D, 3A, 3B
+    python cobretti.py -stage [#] -email [email@iastate.edu]
+    Example stages: 1A, 2C, 3A (see manual for all options)
 
-STAGE 1: SECONDARY STRUCTURE PREDICTION
-Place fasta ('.fa') files of interest in current working directory, or provide list of accession numbers and add "-i list.txt" to command line
-    1A: Finished when all ScanFold runs ('scanfold#.sh') and BLAST searches ('blast#.sh') are complete
-    1B: Run once stage 1A complete
-        Finished when all cm-builder runs ('cmbuilder#.sh') are complete
-    1C: Run once stage 1B complete
-        Finished when R-Scape run ('rscape.sh','All.Rscape.pdf') is complete and working directory is cleaned up
-
-STAGE 2: TERTIARY STRUCTURE AND POCKET PREDICTION
-Copy motifs ('.dbn') of interest into current working directory
-    2A: Finished when all SimRNA runs ('simrna#.sh') are complete
-    2B: Run once stage 2A complete
-        Finished when QRNAS refinements ('qrnas#.sh') are complete
-    2C: Run once stage 2B complete
-        Finished when ARES run ('ares.sh','ares.csv') and fpocket run is complete
-
-STAGE 3: VIRTUAL SCREENING - WORK IN PROGRESS
-Copy structures ('.pdb') of interest into working directory
-    3A: Finished when all DOCK 6 ru#!/usr/bin/pythonns ('dock#.sh') are complete
-    3B: Run once stage 3B complete
-        Finished when AnnapuRNA run ('annapurna.txt') is complete
-
-Substages are also available for troubleshooting, and custom stages can be built as needed.
-
+Manual:
+    https://github.com/moss-lab/Cobretti/blob/main/cobretti_manual.docx
 """
+
 import argparse
+from Bio import Entrez
+from Bio import SeqIO
+import logging
 import os
+from pathlib import Path
 import random
 import shutil
 import subprocess
 import sys
 
-"""FUNCTIONS"""
+current_directory = Path.cwd()
+
+# Program default locations
+COBRETTI = '/work/LAS/wmoss-lab/scripts/cobretti.py'
+SCANFOLD_1 = '/work/LAS/wmoss-lab/scripts/ScanFold.py'
+SCANFOLD_2 = '/work/LAS/wmoss-lab/scripts/ScanFold2.0-inforna/ScanFoldBothForInforna.py'
+SCANFOLD_2_ENV = '/work/LAS/wmoss-lab/programs/envs/ScanFold2'
+CMBUILDER = '/work/LAS/wmoss-lab/scripts/labtools/cm-builder'
+RSCAPE = '/work/LAS/wmoss-lab/programs/rscape_v2.0.0.k/bin/R-scape'
+R2R = '/work/LAS/wmoss-lab/programs/R2R-1.0.6/src/r2r'
+PERL = '/work/LAS/wmoss-lab/programs/lib/perl5/'
+RNAFRAMEWORK = '/work/LAS/wmoss-lab/programs/RNAFramework/lib/'
+KNOTTY = '/work/LAS/wmoss-lab/programs/knotty/knotty'
+HFOLD = '/work/LAS/wmoss-lab/programs/hfold/HFold_iterative'
+SIMRNA = '/work/LAS/wmoss-lab/programs/SimRNA'
+QRNAS = '/work/LAS/wmoss-lab/programs/qrnas/QRNA'
+QRNAS_FF = '/work/LAS/wmoss-lab/programs/qrnas/forcefield'
+ARES = '/work/LAS/wmoss-lab/programs/ares'
+ARES_ENV = '/work/LAS/wmoss-lab/programs/envs/ares'
+FPOCKET = '/work/LAS/wmoss-lab/programs/fpocket2/bin/fpocket'
 
 
-def folder_make(directory, subdirectory):  # Check if a subdirectory exists; if not, make directory
-    if os.path.exists(os.path.join(directory, subdirectory)) == False:
-        os.mkdir(os.path.join(directory, subdirectory))
+def main():
+    parser = argparse.ArgumentParser()
+
+    # Required inputs
+    parser.add_argument('-stage', type=str, default='0',
+                        help='input stage number to run')
+    parser.add_argument('-email', type=str, default='',
+                        help='input email address')
+
+    # Optional inputs
+    parser.add_argument('-i', type=str, default='',
+                        help='input list of fasta accession numbers (stage 1A)')
+    parser.add_argument('-seq', type=str, default=current_directory,
+                        help='input alternate location for fasta sequences')
+    parser.add_argument('-db', type=str, default=current_directory,
+                        help='input alternate location for BLAST sequence files')
+    parser.add_argument('-dbn', type=str, default=current_directory,
+                        help='input alternate location for fasta sequences')
+    parser.add_argument('-pk', type=str, default=current_directory,
+                        help='input alternate location for pseudoknot motifs')
+    parser.add_argument('-set_dbn_extend', type=bool, default=True,
+                        help='extend pseudoknot motifs True/False (stage 1B)')
+
+    # Program location inputs
+    parser.add_argument('-cobretti', type=str, default=COBRETTI,
+                        help='input location of cobretti.py')
+    parser.add_argument('-sf', type=str, default=SCANFOLD_1,
+                        help='input location of ScanFold.py')
+    parser.add_argument('-sf2', type=str, default=SCANFOLD_2,
+                        help='input location of ScanFold2.0.py')
+    parser.add_argument('--sf2env', type=str, default=SCANFOLD_2_ENV,
+                        help='input location of ScanFold2.0 conda environment')
+    parser.add_argument('-cmb', type=str, default=CMBUILDER,
+                        help='input location of cm-builder')
+    parser.add_argument('-rs', type=str, default=RSCAPE,
+                        help='input location of R-Scape')
+    parser.add_argument('-r2r', type=str, default=R2R,
+                        help='input location of R2R')
+    parser.add_argument('-perl', type=str, default=PERL,
+                        help='input location of Perl directory (perl5) (for R-Scape)')
+    parser.add_argument('-rf', type=str, default=RNAFRAMEWORK,
+                        help='input location of RNAFramework directory (RNAFramework/lib/) (for R-Scape)')
+    parser.add_argument('-ky', type=str, default=KNOTTY,
+                        help='input location of Knotty (knotty)')
+    parser.add_argument('-hf', type=str, default=HFOLD,
+                        help='input location of Iterative HFold (HFold_iterative)')
+    parser.add_argument('-sim', type=str, default=SIMRNA,
+                        help='input location of SimRNA directory')
+    parser.add_argument('-qrnas', type=str, default=QRNAS,
+                        help='input location of QRNAS')
+    parser.add_argument('-qrnasff', type=str, default=QRNAS_FF,
+                        help='input location of QRNAS force field')
+    parser.add_argument('-ares', type=str, default=ARES,
+                        help='input location of ARES')
+    parser.add_argument('-aresenv', type=str, default=ARES_ENV,
+                        help='input location of ARES conda environment')
+    parser.add_argument('-fpocket', type=str, default=FPOCKET,
+                        help='input location of fpocket')
+
+    # Add args
+    args = parser.parse_args()
+    fasta_list = args.i
+    stage = args.stage
+    email = args.email
+    sequence_directory = args.seq
+    database_directory = args.db
+    dbn_directory = args.dbn
+    pk_directory = args.pk
+    set_dbn_extend = args.set_dbn_extend
+    cobretti_program = args.cobretti
+    scanfold_program = args.sf
+    scanfold2_program = args.sf2
+    scanfold2_environment = args.sf2env
+    cmbuilder_program = args.cmb
+    rscape_program = args.rs
+    r2r_program = args.r2r
+    perl_program = args.perl
+    rnaframework_directory = args.rf
+    knotty_program = args.ky
+    hfold_program = args.hf
+    simrna_directory = args.sim
+    qrnas_program = args.qrnas
+    qrnas_ff = args.qrnasff
+    ares_program = args.ares
+    ares_environment = args.aresenv
+    fpocket_program = args.fpocket
+
+    # Exit if required inputs missing
+    if email == '':
+        logging.error('No email provided, use "-email" to define string. Exiting...')
+        sys.exit()
+    if stage == '0':
+        logging.error('No stage specified, use "-stage" to define string (e.g., "1A"). Exiting...')
+        sys.exit()
+    # If stage/email provided, execute stage functions
+    logging.info(f'Cobretti stage {stage} run in progress...')
+    # Checksum to see if any stage(s) ran
+    is_stage = False
+
+    if stage == ('1A' or '1AA' or '1AB' or '1A1' or '1A1A'):
+        # Prepare files for ScanFold run
+        is_stage = True
+        logging.info('Preparing sequence files...')
+        if sequence_directory == current_directory:
+            # Make a sequence directory if there is none
+            Path.mkdir(Path.joinpath(current_directory, 'sequences'), exist_ok=True)
+            sequence_directory = Path.joinpath(current_directory, 'sequences')
+        if fasta_list != '':
+            # Read sequences in textfile, pull sequences from Entrez database, place in sequence directory
+            fasta_build(fasta_list, sequence_directory, email)
+        else:
+            # Move sequences from current directory to sequence directory
+            for filepath in current_directory.glob('*.fa*'):
+                try:
+                    with open(filepath, 'r') as readfile:
+                        # Standardize naming convention, uses internal name from ">" line NOT the filename
+                        fasta_lines = readfile.readlines()
+                        fasta_name = fasta_lines[0].rstrip().replace('.', '-').replace('_', '-').strip('>').split(' ')[
+                                         0] + '.fasta'
+                    shutil.move(filepath, Path.joinpath(sequence_directory, fasta_name))
+                except:
+                    logging.error(f'Unable to move file: {filepath.name}')
+
+    if stage == ('1A' or '1AA'):
+        # Run ScanFold 2.0
+        is_stage = True
+        logging.info('Running ScanFold 2.0...')
+        scanfold2_prep(sequence_directory, scanfold2_program, scanfold2_environment, email)
+        scanfold2_run(current_directory)
+
+    if stage == ('1A1' or '1A1A'):
+        # Legacy code to run ScanFold 1.0
+        is_stage = True
+        logging.info('Running ScanFold 1.0...')
+        scanfold_prep(sequence_directory, scanfold_program, email)
+        scanfold_run(current_directory)
+
+    if stage == ('1A' or '1AB' or '1A1'):
+        # Run NCBI BLAST using Pronto databases, save results to database directory
+        is_stage = True
+        logging.info('Running BLAST...')
+        if database_directory == current_directory:
+            # Make a database directory if there is none
+            Path.mkdir(Path.joinpath(current_directory, 'databases'), exist_ok=True)
+            database_directory = Path.joinpath(current_directory, 'databases')
+        blast_prep(sequence_directory, database_directory, email)
+        blast_run(current_directory)
+
+    if stage == ('1B' or '1BA' or '1BB' or '1BC' or '1BC1'):
+        # Build/set locations of files
+        is_stage = True
+        logging.info('Preparing files for PK/cm-builder...')
+        if sequence_directory == current_directory:
+            sequence_directory = folder_check(sequence_directory, 'sequences')
+        if database_directory == current_directory:
+            database_directory = folder_check(database_directory, 'databases')
+        if dbn_directory == current_directory:
+            # Make a dot-bracket notation directory if there is none
+            Path.mkdir(Path.joinpath(current_directory, 'motifs'), exist_ok=True)
+            dbn_directory = Path.joinpath(current_directory, 'motifs')
+        if pk_directory == current_directory:
+            # Make a pseudoknot directory if there is none
+            Path.mkdir(Path.joinpath(current_directory, 'pk_motifs'), exist_ok=True)
+            pk_directory = Path.joinpath(current_directory, 'pk_motifs')
+
+    if stage == ('1B' or '1BA'):
+        # Move BLAST files and edit databases to make them more readable
+        is_stage = True
+        logging.info('Optimizing BLAST databases...')
+        blast_cleanup(current_directory, database_directory, dbn_directory)
+
+    if stage == ('1B' or '1BB'):
+        # Refold motifs using Knotty and HFold
+        is_stage = True
+        if set_dbn_extend:
+            # Extend all motifs for pseudoknot refolding
+            logging.info('Extending motifs...')
+            extend_motifs(sequence_directory, dbn_directory)
+        logging.info('Checking for pseudoknots...')
+        pk_fold(knotty_program, hfold_program)
+        logging.info('Cleaning up pseudoknot results...')
+        pk_cleanup()
+        logging.info('Nesting pseudoknots...')
+        pk_breakdown(pk_directory)
+
+    if stage == ('1B' or '1BC' or '1BC1'):
+        # Prepare cm-builder files, stage 1BC1 will NOT run them
+        is_stage = True
+        logging.info('Preparing cm-builder scripts...')
+        cmbuilder_prep(sequence_directory, database_directory, pk_directory, cmbuilder_program, perl_program,
+                       rnaframework_directory, email, rscape_program, r2r_program,
+                       cobretti_program)
+
+    if stage == ('1B' or '1BC'):
+        # Run cm-builder shell scripts
+        is_stage = True
+        logging.info('Running cm-builder scripts...')
+        cmbuilder_run(current_directory)
+
+    if stage == '1C':
+        # Clean up cm-builder runs and run R-Scape
+        is_stage = True
+        logging.info('Organizing files and running R-Scape...')
+        cmbuilder_cleanup()
+
+    if stage == ('1C' or '1CA'):
+        # Substage called by R-Scape script to organize remaining files
+        is_stage = True
+        logging.info('R-Scape complete, organizing results...')
+        cmbuilder_cleanup2()
+
+    if stage == ('2A' or '2AA'):
+        # Prepare SimRNA scripts
+        is_stage = True
+        logging.info('Preparing SimRNA scripts...')
+        SimRNA_prep(simrna_directory, email)
+
+    if stage == ('2A' or '2AB'):
+        # Run SimRNA scripts
+        is_stage = True
+        logging.info('Running SimRNA scripts...')
+        SimRNA_run()
+
+    if stage == ('2B' or '2BA'):
+        # Organize SimRNA files
+        is_stage = True
+        logging.info('Organizing SimRNA files...')
+        SimRNA_cleanup()
+
+    if stage == ('2B' or '2BB'):
+        # Prepare QRNAS scripts
+        is_stage = True
+        logging.info('Preparing QRNAS scripts...')
+        QRNAS_prep(qrnas_program, qrnas_ff, email)
+
+    if stage == ('2B' or '2BC'):
+        # Run QRNAS scripts
+        is_stage = True
+        logging.info('Running QRNAS scripts...')
+        QRNAS_run()
+
+    if stage == ('2C' or '2CA'):
+        # Organize QRNAS files
+        is_stage = True
+        logging.info('Organizing QRNAS files...')
+        QRNAS_cleanup()
+
+    if stage == ('2C' or '2CB'):
+        # Prepare ARES scripts
+        is_stage = True
+        logging.info('Preparing ARES scripts...')
+        ares_prep(ares_program, ares_environment, email)
+
+    if stage == ('2C' or '2CC'):
+        # Run ARES scripts
+        is_stage = True
+        logging.info('Running ARES scripts...')
+        ares_run()
+
+    if stage == '2D':
+        # Final stage cleanup and fpocket run
+        # Separated stage to avoid ARES reading duplicate PDB files in fpocket subdirectories
+        is_stage = True
+        logging.info('Running fpocket...')
+        fpocket_run(fpocket_program)
+        logging.info('Organizing fpocket results...')
+        fpocket_cleanup()
+        fpocket_read()
+
+    if stage == ('3A' or '3AA'):
+        # Prepare DOCK 6 scripts
+        is_stage = True
+        logging.info('Preparing DOCK 6 scripts...')
+        dock6_prep()
+
+    if stage == ('3A' or '3AB'):
+        # Run DOCK 6 scripts
+        is_stage = True
+        logging.info('Running DOCK 6 scripts...')
+        dock6_run()
+
+    if stage == '3B':
+        # Run AnnapuRNA
+        is_stage = True
+        logging.info('Running AnnapuRNA...')
+        annapurna_run()
+
+    if is_stage == False:
+        logging.error('Incorrect stage specified, use "-stage" to define string (e.g., "1A"). Exiting...')
+        sys.exit()
 
 
-def folder_check(directory,
-                 subdirectory):  # Check if subdirectory exists; if so, return as path; if not, return directory as path
-    if os.path.exists(os.path.join(directory, subdirectory)) == True:
-        return (os.path.join(directory, subdirectory))
+def folder_check(working_directory, subdirectory):
+    # Check if subdirectory exists; if so, return as path; if not, return directory as path
+    if Path.exists(Path.joinpath(working_directory, subdirectory)):
+        return Path.joinpath(working_directory, subdirectory)
     else:
-        return (directory)
+        return working_directory
 
 
 def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, notify='ALL'):
+    # Build shell scripts with Pronto/HPC settings and modules
     with open(filename, 'w', newline='\n') as writefile:
         writefile.writelines('#!/bin/bash -l\n')
         writefile.writelines('#SBATCH --partition=biocrunch\n')  # Partition to submit to
-        writefile.writelines('#SBATCH --time=' + str(time) + '-00:00:00\n')  # Time limit for this job
-        writefile.writelines('#SBATCH --nodes=' + str(nodes) + '\n')  # Nodes to be used for this job during runtime
+        writefile.writelines(f'#SBATCH --time={time}-00:00:00\n')  # Time limit for this job in days
+        writefile.writelines(f'#SBATCH --nodes={nodes}\n')  # Nodes to be used for this job during runtime
         if mem != 0:
-            writefile.writelines('#SBATCH --mem=' + str(
-                mem) + 'G\n')  # Memory allocation may or may not be needed based on motif and database size
-        writefile.writelines('#SBATCH --ntasks-per-node=' + str(tasks) + '\n')
-        writefile.writelines('#SBATCH --job-name=' + job + '\n')  # Name of this job in work queue
-        writefile.writelines('#SBATCH --mail-user=' + email + '\n')  # Email to send notifications to
-        writefile.writelines('#SBATCH --mail-type=' + notify + '\n')  # Email notification type (BEGIN, END, FAIL, ALL)
+            writefile.writelines(f'#SBATCH --mem={mem}G\n')  # Optional memory allocation
+        writefile.writelines(f'#SBATCH --ntasks-per-node={tasks}\n')
+        writefile.writelines(f'#SBATCH --job-name={job}\n')  # Name of this job in work queue
+        writefile.writelines(f'#SBATCH --mail-user={email}\n')  # Email to send notifications to
+        writefile.writelines(f'#SBATCH --mail-type={notify}\n')  # Email notification type (BEGIN, END, FAIL, ALL)
         writefile.writelines('\n')
+        # Add Pronto modules
         if job.startswith('scanfold2'):
             writefile.writelines('#SBATCH --export=NONE\n\n')
             writefile.writelines('module purge\n')
@@ -119,282 +406,284 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
         writefile.writelines('\n')
 
 
-def fasta_build(filename, sequence_directory,
-                email):  # read a text file of accession numbers, download associated fasta files
+def fasta_build(filename, sequence_directory, email):
+    # read a text file of accession numbers, download associated fasta files
+    Path.mkdir(sequence_directory, exist_ok=True)
     with open(filename, 'r') as readfile:
         lines = readfile.readlines()
-        if os.path.exists(sequence_directory) == False:
-            os.mkdir(sequence_directory)
         for line in lines:
-            with open(os.path.join(sequence_directory, line + '.fa'), 'w', newline='\n') as writefile:
-                writefile.writelines('>' + line + '\n')
-                writefile.writelines(fasta_find(line, email).replace('T', 'U') + '\n')
+            logging.debug(f'Name: {line}')
+            with open(Path.joinpath(sequence_directory, line + '.fa'), 'w', newline='\n') as writefile:
+                writefile.writelines(f'>{line}\n')
+                entrez_sequence = fasta_find(line, email).replace('T', 'U')
+                writefile.writelines(f'{entrez_sequence}\n')
+                logging.debug(f'Seq: {entrez_sequence}')
 
 
 def fasta_find(accession_number, email):  # Download fasta sequences via Entrez
-    from Bio import Entrez
     Entrez.email = email  # Required for Entrez
-    Entrez_search = Entrez.efetch(db='nucleotide', id=accession_number, rettype='fasta')
-    Entrez_record = SeqIO.read(Entrez_search, 'fasta')
-    return (Entrez_record.seq)
+    logging.debug(f'Running Entrez for {accession_number}')
+    entrez_search = Entrez.efetch(db='nucleotide', id=accession_number, rettype='fasta')
+    entrez_record = SeqIO.read(entrez_search, 'fasta')
+    return entrez_record.seq
 
 
-def ScanFold2_prep(sequence_directory, scanfold2_directory, scanfold2_environment, email):  # Makes shell scripts for ScanFold 2.0 runs
-    all_files = os.listdir(sequence_directory)
-    count = 1
-    for filename in all_files:
-        if filename.endswith('.fa') or filename.endswith('.fasta'):
-            with open(os.path.join(sequence_directory, filename), 'r') as readfile:
+def scanfold2_prep(sequence_directory, scanfold2_directory, scanfold2_environment, email):
+    # Make shell scripts for ScanFold 2.0 runs
+    for filepath in sequence_directory.glob('*.fa*'):
+        with open(filepath, 'r') as readfile:
+            lines = readfile.readlines()
+            # Redundant header replace in case a stage was skipped
+            name = lines[0].rstrip().replace('.', '-').replace('_', '-').strip('>').split(' ')[0]
+            logging.debug(f'ScanFold 2.0 generic filename: {name}')
+        shell_build_start(f'scanfold2_{name}.sh', f'scanfold2_{name}', email, mem=10, notify='END,FAIL')
+        with open(f'scanfold2_{name}.sh', 'a', newline='\n') as writefile:
+            writefile.writelines(f'conda activate {scanfold2_environment}\n')
+            writefile.writelines('wait;\n')
+            writefile.writelines(f'python {scanfold2_directory} {filepath} --folder_name {name} --global_refold &\n')
+            writefile.writelines('wait;\n')
+
+
+def scanfold2_run(working_directory):
+    # Run ScanFold 2.0 shell scripts
+    for filepath in working_directory.glob('scanfold2_*.sh'):
+        logging.debug(f'ScanFold 2 shell path: {filepath}')
+        os.system(f'sbatch {filepath.name}')
+
+
+def scanfold_prep(sequence_directory, scanfold_directory, email):
+    # Makes shell script(s) for ScanFold run(s)
+    for filepath in sequence_directory.glob('*.fa*'):
+        with open(filepath, 'r') as readfile:
+            lines = readfile.readlines()
+            # Redundant header replace in case a stage was skipped
+            name = lines[0].rstrip().replace('.', '-').replace('_', '-').strip('>').split(' ')[0]
+            logging.debug(f'ScanFold generic filename: {name}')
+        shell_build_start(f'scanfold1_{name}.sh', f'scanfold1_{name}', email, mem=10, notify='END,FAIL')
+        with open(f'scanfold1_{name}.sh', 'a', newline='\n') as writefile:
+            writefile.writelines(f'python {scanfold_directory} {filepath} --name {name} --global_refold &\n')
+            writefile.writelines('wait;\n')
+
+
+def scanfold_run(working_directory):
+    # Run ScanFold shell scripts
+    for filepath in working_directory.glob('scanfold1_*.sh'):
+        logging.debug(f'ScanFold shell path: {filepath}')
+        os.system(f'sbatch {filepath.name}')
+
+
+def blast_prep(sequence_directory, database_directory, email):
+    # BLAST search using local databases, output to database directory
+    for filepath in sequence_directory.glob('*.fa*'):
+        for record in SeqIO.parse(filepath, 'fasta'):
+            name = record.name
+            logging.debug(f'BLAST sequence name: {name}')
+            blast_tempfile = f'{name}_db_raw.txt'
+            tempfile_location = Path.joinpath(database_directory, blast_tempfile)
+            shell_build_start(f'blast_{name}.sh', f'blast_{name}', email, tasks=8, notify='END,FAIL')
+            with open(f'blast_{name}.sh', 'a', newline='\n') as writefile:
+                writefile.writelines(f'blastn -task blastn -db nt -query {filepath} -out {tempfile_location} -outfmt '
+                                     f'"6 sacc sseq" -max_target_seqs 2500 -num_threads 8 -max_hsps 1;\n')
+                writefile.writelines('wait;')
+
+
+def blast_run(working_directory):
+    # Run BLAST shell scripts
+    for filepath in working_directory.glob('blast_*.sh'):
+        logging.debug(f'BLAST shell path: {filepath}')
+        os.system(f'sbatch {filepath.name}')
+
+
+def blast_cleanup(working_directory, database_directory, dbn_directory):
+    # Organize BLAST output files and move sequences to a single line
+    folders = ['sh', 'out']
+    for folder in folders:
+        Path.mkdir(Path.joinpath(working_directory, folder), exist_ok=True)
+    sh_directory = Path.joinpath(working_directory, 'sh')
+    out_directory = Path.joinpath(working_directory, 'out')
+    # Move ScanFold shell scripts
+    for filepath in working_directory.glob('scanfold*_*.sh'):
+        try:
+            shutil.move(filepath, Path.joinpath(sh_directory, filepath.name))
+        except:
+            logging.error(f'Unable to move file: {filepath.name}')
+    # Move BLAST shell scripts
+    for filepath in working_directory.glob('blast*.sh'):
+        try:
+            shutil.move(filepath, Path.joinpath(sh_directory, filepath.name))
+        except:
+            logging.error(f'Unable to move file: {filepath.name}')
+    # Move SLURM output files
+    for filepath in working_directory.glob('slurm*.out'):
+        try:
+            shutil.move(filepath, Path.joinpath(out_directory, filepath.name))
+        except:
+            logging.error(f'Unable to move file: {filepath.name}')
+    # Edit database files to proper FASTA format
+    for filepath in database_directory.glob('*_db_raw.txt'):
+        stem = filepath.name.split('_db_raw.txt')[0]
+        database_filename = stem + '_db.fa'
+        with open(Path.joinpath(database_directory, database_filename), 'w', newline='\n') as writefile:
+            with open(filepath, 'r') as readfile:
                 lines = readfile.readlines()
-                name = lines[0].rstrip().replace('.', '-').replace('_', '-').strip('>').split(' ')[0]
-            shell_build_start('scanfold2_' + str(count) + '.sh', 'scanfold2_' + name, email, mem=10, notify='END,FAIL')
-            with open('scanfold2_' + str(count) + '.sh', 'a', newline='\n') as writefile:
-                writefile.writelines('conda activate %s\nwait;\n' % scanfold2_environment)
-                writefile.writelines('python %s %s --folder_name %s --global_refold &\n' % (
-                    scanfold2_directory, os.path.join(sequence_directory, filename), name))
-                writefile.writelines('wait;\n')
-            count += 1
-
-
-def ScanFold2_run():  # Run ScanFold on all fasta files
-    current_directory = os.getcwd()
-    all_files = os.listdir(current_directory)
-    for filename in all_files:
-        if filename.startswith('scanfold2') and filename.endswith('.sh'):
-            os.system('sbatch ' + filename)
-
-
-def ScanFold_prep(sequence_directory, scanfold_directory, email):  # Makes shell scripts for ScanFold runs
-    all_files = os.listdir(sequence_directory)
-    count = 1
-    for filename in all_files:
-        if filename.endswith('.fa') or filename.endswith('.fasta'):
-            with open(os.path.join(sequence_directory, filename), 'r') as readfile:
-                lines = readfile.readlines()
-                name = lines[0].rstrip().replace('.', '-').replace('_', '-').strip('>').split(' ')[0]
-            shell_build_start('scanfold1_' + str(count) + '.sh', 'scanfold1_' + name, email, mem=10, notify='END,FAIL')
-            with open('scanfold1_' + str(count) + '.sh', 'a', newline='\n') as writefile:
-                writefile.writelines('python %s %s --name %s --global_refold &\n' % (
-                    scanfold_directory, os.path.join(sequence_directory, filename), name))
-                writefile.writelines('wait;\n')
-            count += 1
-
-
-def ScanFold_run():  # Run ScanFold on all fasta files
-    current_directory = os.getcwd()
-    all_files = os.listdir(current_directory)
-    for filename in all_files:
-        if filename.startswith('scanfold1') and filename.endswith('.sh'):
-            os.system('sbatch ' + filename)
-
-
-def blast_prep(sequence_directory, db_directory,
-               email):  # BLAST search using local databases, output to database directory
-    from Bio import SeqIO
-    all_files = os.listdir(sequence_directory)
-    count = 1
-    for filename in all_files:
-        if filename.endswith('.fa') or filename.endswith('.fasta'):
-            for record in SeqIO.parse(os.path.join(sequence_directory, filename), 'fasta'):
-                name = filename.split('.')[0]
-                blast_tmp = name + '_db_raw.txt'
-                seq_file = os.path.join(sequence_directory, filename)
-                tmp_file = os.path.join(db_directory, blast_tmp)
-                shell_build_start('blast_' + str(count) + '.sh', 'blast_' + name, email, tasks=8, notify='END,FAIL')
-                with open('blast_' + str(count) + '.sh', 'a', newline='\n') as writefile:
-                    writefile.writelines(
-                        'blastn -task blastn -db nt -query %s  -out %s -outfmt "6 sacc sseq" -max_target_seqs 2500 -num_threads 8 -max_hsps 1;\n' % (
-                            seq_file, tmp_file))
-                    writefile.writelines('wait;')
-                count += 1
-
-
-def blast_run():
-    current_directory = os.getcwd()
-    all_files = os.listdir(current_directory)
-    for filename in all_files:
-        if filename.startswith('blast') and filename.endswith('.sh'):
-            os.system('sbatch ' + filename)
-
-
-def blast_cleanup(db_directory, dbn_directory):
-    current_directory = os.getcwd()
-    all_files = os.listdir(current_directory)
-    sh_directory = os.path.join(current_directory, 'sh')
-    if os.path.exists(sh_directory) == False:
-        os.mkdir(sh_directory)
-    out_directory = os.path.join(current_directory, 'out')
-    if os.path.exists(out_directory) == False:
-        os.mkdir(out_directory)
-    for filename in all_files:
-        if (filename.startswith('ScanFold2') or filename.startswith('scanfold1') or filename.startswith(
-                'blast')) and filename.endswith('.sh'):
-            try:
-                shutil.move(os.path.join(current_directory, filename), os.path.join(sh_directory, filename))
-            except:
-                pass
-        elif filename.startswith('slurm') and filename.endswith('.out'):
-            try:
-                shutil.move(os.path.join(current_directory, filename), os.path.join(out_directory, filename))
-            except:
-                pass
-    db_files = os.listdir(db_directory)
-    for filename in db_files:
-        if filename.endswith('_db_raw.txt'):
-            name = filename.split('_db_raw.txt')[0]
-            db_filename = name + '_db.fa'
-            with open(os.path.join(db_directory, db_filename), 'w', newline='\n') as writefile:
-                with open(os.path.join(db_directory, filename), 'r') as readfile:
-                    lines = readfile.readlines()
-                    for line in lines:
-                        accession = line.rstrip().split('\t')[0]
-                        sequence = line.rstrip().split('\t')[1]
-                        writefile.writelines('>' + accession + '\n')
-                        writefile.writelines(sequence.replace('T', 'U').replace('-', '') + '\n')
-    #            if os.path.isfile(os.path.join(db_directory,db_filename)) == True:
-    #                os.remove(os.path.join(db_directory,filename))
-    #                os.remove(os.path.join(db_directory,single_line_filename))
-    current_directory = os.getcwd()
-    all_files = os.listdir(current_directory)
-    for root, dirs, files in os.walk(current_directory):
-        for name in files:
-            if root.endswith('motifs'):
-                pass
-            else:
-                try:
-                    if name.endswith('.dbn') and name.split('_')[-2] == 'motif':
-                        shutil.copy(os.path.join(root, name), os.path.join(dbn_directory, name))
-                except:
-                    pass
+                for line in lines:
+                    accession = line.rstrip().split('\t')[0]
+                    sequence = line.rstrip().split('\t')[1]
+                    sequence = sequence.replace('T', 'U').replace('-', '')
+                    writefile.writelines(f'>{accession}\n')
+                    writefile.writelines(f'{sequence}\n')
+    # Make copies of all motifs and consolidate
+    for filepath in working_directory.rglob('*_motif_*.dbn'):
+        try:
+            shutil.copy(filepath, Path.joinpath(dbn_directory, filepath.name))
+        except:
+            logging.error(f'Unable to copy file: {filepath.name}')
 
 
 def extend_motifs(sequence_directory, dbn_directory, dbn_writefile='extended.dbn'):
+    # Find all DBN files iin a directory and extend them using sequence files
     open(dbn_writefile, 'w', newline='\n')
-    all_files = os.listdir(dbn_directory)
-    for filename in all_files:
+    for filepath in dbn_directory.glob('*_motif_*.dbn'):
         try:
-            if filename.endswith('.dbn') and filename.split('_')[-2] == 'motif':
-                dbn_extend(dbn_directory, filename, sequence_directory, dbn_writefile)
+            logging.debug(f'Extending {filepath.name}')
+            dbn_extend(sequence_directory, filepath, dbn_writefile)
         except:
-            continue
+            logging.error(f'Failed to extend file: {filepath.name}')
 
 
-def dbn_extend(dbn_directory, dbn_readfile, sequence_directory,
-               dbn_writefile):  # Extends ScanFold DBN motifs by 30 nts on each side
-    from Bio import SeqIO
-    with open(os.path.join(dbn_directory, dbn_readfile), 'r') as readfile:
+def dbn_extend(sequence_directory, dbn_filepath, dbn_writefile):
+    # Extends ScanFold DBN motifs on 5' and 3' end
+    EXTENSION = 30
+    with open(dbn_filepath, 'r') as readfile:
         dbn_lines = readfile.readlines()
-        tag = dbn_readfile.split('_')[0]
+        tag = dbn_filepath.name.split('_')[0]
         dbn_header = str(dbn_lines[0]).rstrip()
         dbn_sequence = str(dbn_lines[1]).rstrip()
         dbn_structure = str(dbn_lines[2]).rstrip()
-    all_files = os.listdir(sequence_directory)
-    for filename in all_files:
-        if filename.startswith(tag) and (filename.endswith('.fa') or filename.endswith('.fasta')):
-            for record in SeqIO.parse(os.path.join(sequence_directory, filename), 'fasta'):
-                fasta_sequence = str(record.seq).replace('T', 'U')
-                seq_start = fasta_sequence.find(dbn_sequence)
-                seq_length = len(dbn_sequence)
-                seq_end = seq_start + seq_length
-                if seq_start < 30:
-                    dbn_start = 0
-                    five_prime_filler = seq_start
-                else:
-                    dbn_start = seq_start - 30
-                    five_prime_filler = 30
-                if seq_end + 30 > len(fasta_sequence):
-                    dbn_end = len(fasta_sequence)
-                    three_prime_filler = dbn_end - seq_end
-                else:
-                    dbn_end = seq_end + 30
-                    three_prime_filler = 30
-    with open(dbn_writefile, 'a+', newline='\n') as writefile:
-        writefile.writelines(dbn_header + '\n')
-        writefile.writelines(fasta_sequence[dbn_start:dbn_end] + '\n')
-        writefile.writelines('.' * five_prime_filler + dbn_structure + '.' * three_prime_filler + '\n')
+    for filepath in sequence_directory.glob(tag + '*.fa*'):
+        logging.debug(f'Matching sequence: {filepath.name}')
+        for record in SeqIO.parse(filepath, 'fasta'):
+            fasta_sequence = str(record.seq).replace('T', 'U')
+            sequence_start = fasta_sequence.find(dbn_sequence)
+            sequence_length = len(dbn_sequence)
+            sequence_end = sequence_start + sequence_length
+            logging.debug(f'Sequence start: {sequence_start}')
+            logging.debug(f'Sequence length: {sequence_length}')
+            logging.debug(f'Sequence end: {sequence_end}')
+            # If motif is near the end of the sequence, don't extend past the end
+            if sequence_start < EXTENSION:
+                dbn_start = 0
+                five_prime_filler = sequence_start
+            else:
+                dbn_start = sequence_start - EXTENSION
+                five_prime_filler = EXTENSION
+            if sequence_end + EXTENSION > len(fasta_sequence):
+                dbn_end = len(fasta_sequence)
+                three_prime_filler = dbn_end - sequence_end
+            else:
+                dbn_end = sequence_end + EXTENSION
+                three_prime_filler = EXTENSION
+            # Append results, adding dots to unstructured extensions to maintain proper alignment
+            with open(dbn_writefile, 'a+', newline='\n') as writefile:
+                writefile.writelines(f'>{dbn_header}\n')
+                writefile.writelines(f'{fasta_sequence[dbn_start:dbn_end]}\n')
+                writefile.writelines(f'{"." * five_prime_filler}{dbn_structure}{"." * three_prime_filler}\n')
 
 
-def pk_fold(knotty_program, hfold_program, dbn_readfile='extended.dbn',
-            pk_writefile='tmppk.txt'):  # Fold dbn motifs and output to single textfile
+def pk_fold(knotty_program, hfold_program, dbn_readfile='extended.dbn', pk_writefile='tmppk.txt'):
+    # Fold DBN motifs with Knotty, HFold and output results to a textfile
     with open(pk_writefile, 'w', newline='\n') as writefile, open(dbn_readfile, 'r') as readfile:
         i = 0
+        NUCLEOTIDES = {'A', 'C', 'G', 'U'}
+        LEFT_BRACKETS = {'(', '[', '{', '<'}
+        RIGHT_BRACKETS = {')', ']', '}', '>'}
+        AMBIGUOUS_NUCLEOTIDE_CODES = {
+            "N": ('A', 'C', 'G', 'U'),
+            "B": ('C', 'G', 'U'),
+            "D": ('A', 'G', 'U'),
+            "H": ('A', 'C', 'U'),
+            "V": ('A', 'C', 'G'),
+            "K": ('G', 'U'),
+            "M": ('A', 'C'),
+            "R": ('A', 'G'),
+            "S": ('C', 'G'),
+            "W": ('A', 'U'),
+            "Y": ('C', 'U')}
         lines = [line for line in readfile.readlines() if line.strip()]
         for line_index, line in enumerate(lines):
             if (line_index + 3) >= len(lines):
+                # Stop when there aren't enough lines left to contain a DBN
                 break
-            print("first character in line: " + str(line[0]))
+            logging.debug(f'First character in line {line_index}: {line[0]}')
             if line[0] == '>':
                 dbn_header = str(lines[i]).rstrip()
                 dbn_sequence = str(lines[i + 1]).rstrip()
                 dbn_structure = str(lines[i + 2]).rstrip()
                 left_pos = 0
                 right_pos = len(dbn_sequence)
-                nucleotides = {'A', 'C', 'G', 'U'}
-                left_brackets = {'(', '[', '{', '<'}
-                right_brackets = {')', ']', '}', '>'}
-                nucleotide_codes = {
-                    "N": ('A', 'C', 'G', 'U'),
-                    "B": ('C', 'G', 'U'),
-                    "D": ('A', 'G', 'U'),
-                    "H": ('A', 'C', 'U'),
-                    "V": ('A', 'C', 'G'),
-                    "K": ('G', 'U'),
-                    "M": ('A', 'C'),
-                    "R": ('A', 'G'),
-                    "S": ('C', 'G'),
-                    "W": ('A', 'U'),
-                    "Y": ('C', 'U')
-                }
                 if dbn_sequence[0] == '>' or dbn_structure[0] == '>':
+                    # Skip if the sequence or structure contain a header
+                    logging.error(f'Misaligned DBN on line {line_index}: {line}')
                     continue
                 if not dbn_sequence[0].isalnum():
+                    # Skip if the sequence contains special characters
+                    logging.error(f'Sequence contains non-canonical nucleotides on line {line_index}: {line}')
                     continue
-                if not (dbn_structure[0] == '.' or dbn_structure[0] in left_brackets or dbn_structure[
-                    0] in right_brackets):
+                if not (dbn_structure[0] == '.' or dbn_structure[0] in LEFT_BRACKETS or dbn_structure[
+                    0] in RIGHT_BRACKETS):
+                    # Skip if the structure is non-standard
+                    logging.error(f'Non-canonical pairing found on line {line_index}: {line}')
                     continue
                 for k, j in enumerate(dbn_sequence):
-                    if j in nucleotides or dbn_structure[k] in left_brackets:
+                    # Shorten the 5' end until an unambiguous nucleotide or base pair is encountered
+                    if j in NUCLEOTIDES or dbn_structure[k] in LEFT_BRACKETS:
                         left_pos = k
                         break
-
                 for k, j in enumerate(dbn_sequence[::-1]):
-                    if j in nucleotides or (dbn_structure[::-1])[k] in right_brackets:
+                    # Shorten the 3' end until an unambiguous nucleotide or base pair is encountered
+                    if j in NUCLEOTIDES or (dbn_structure[::-1])[k] in RIGHT_BRACKETS:
                         right_pos -= k
                         break
-
+                # Adjust sequence/structure length
                 dbn_sequence = dbn_sequence[left_pos:right_pos]
                 dbn_structure = dbn_structure[left_pos:right_pos]
-
+                # Replace ambiguous nucleotides with a random canonical nucleotide
+                # Knotty and HFold will error out unless ambiguous nucleotides are replaced
                 new_sequence = ""
                 for k in dbn_sequence:
-                    if k in nucleotide_codes:
-                        new_sequence += random.choice(nucleotide_codes[k])
-
+                    if k in AMBIGUOUS_NUCLEOTIDE_CODES:
+                        new_sequence += random.choice(AMBIGUOUS_NUCLEOTIDE_CODES[k])
                     else:
                         new_sequence += k
                 dbn_sequence = new_sequence
-
-                writefile.writelines(dbn_header + ' ScanFold\n')
-                writefile.writelines(dbn_sequence + '\n')
-                writefile.writelines(dbn_structure + '\n')
-                writefile.writelines(dbn_header + ' Knotty\n')
-                # writefile.writelines(dbn_sequence+'\n') #Knotty writes own sequence line
-                knotty_input = str('%s %s' % (knotty_program, dbn_sequence))
-                # print(knotty_input)
+                # Write ScanFold motif
+                logging.debug(f'ScanFold starting sequence: {dbn_sequence}')
+                writefile.writelines(f'{dbn_header} ScanFold\n')
+                writefile.writelines(f'{dbn_sequence}\n')
+                writefile.writelines(f'{dbn_structure}\n')
+                # Write Knotty motif
+                writefile.writelines(f'{dbn_header} Knotty\n')
+                # Knotty writes its own sequence line
+                knotty_input = f'{knotty_program} {dbn_sequence}'
+                logging.debug(f'Knotty input: {knotty_input}')
                 writefile.flush()
+                # Flushing the buffer helps keep DBNs properly aligned
                 knotty = subprocess.run(knotty_input, stdout=writefile, shell=True)
-                writefile.writelines(dbn_header + ' HFold\n')
-                # writefile.writelines(dbn_sequence+'\n') #HFold writes own sequence line
-                blank_structure = str('_' * len(dbn_sequence))  # HFold requires '_' instead of '.' to fold properly
-                hfold_blank_input = str('%s --s "%s" --r "%s"' % (hfold_program, dbn_sequence, blank_structure))
-                # print(hfold_blank_input)
+                # Write HFold motif
+                writefile.writelines(f'{dbn_header} HFold\n')
+                # HFold writes its own sequence line
+                # HFold only structure (blank)
+                blank_structure = str('_' * len(dbn_sequence))
+                # HFold constraints require '_' instead of '.' to fold properly
+                hfold_blank_input = f'{hfold_program} --s "{dbn_sequence}" --r "{blank_structure}"'
+                logging.debug(f'HFold input: {hfold_blank_input}')
                 writefile.flush()
                 hfold_only = subprocess.run(hfold_blank_input, stdout=writefile, shell=True)
-                writefile.writelines(dbn_header + ' HFold ScanFold\n')
-                # writefile.writelines(dbn_sequence+'\n') #HFold writes own sequence line
-                hfold_input = str('%s --s "%s" --r "%s"' % (hfold_program, dbn_sequence, dbn_structure.replace('.',
-                                                                                                               '_')))  # HFold requires '_' instead of '.' to fold properly
-                # print(hfold_input)
+                # Write HFold with ScanFold constraints
+                writefile.writelines(f'{dbn_header} HFold ScanFold\n')
+                constraints = dbn_structure.replace('.', '_')
+                hfold_input = f'{hfold_program} --s "{dbn_sequence}" --r "{constraints}"'
+                logging.debug(f'HFold w/ ScanFold input: {hfold_input}')
                 writefile.flush()
                 hfold = subprocess.run(hfold_input, stdout=writefile, shell=True)
                 i += 1
@@ -402,87 +691,85 @@ def pk_fold(knotty_program, hfold_program, dbn_readfile='extended.dbn',
                 i += 1
 
 
-def replace_nucleotide_codes_with_random_nucleotide(sequence, codes):
-    new_sequence = ""
-    for k in sequence:
-        if k in codes:
-            new_sequence += random.choice(codes[k])
-
-        else:
-            new_sequence += k
-    return new_sequence
-
-
-def pk_cleanup(pk_readfile='tmppk.txt',
-               pk_writefile='pk_clean.txt'):  # Clean up pseudoknot file for easier visual comparison and breakdown
+def pk_cleanup(pk_readfile='tmppk.txt', pk_writefile='pk_clean.txt'):
+    # Clean up pseudoknot file for easier visual comparison and breakdown
     i = 0
-    with open(pk_readfile, 'r') as readfile:
-        with open(pk_writefile, 'w', newline='\n') as writefile:
-            lines = readfile.readlines()
-            for line in lines:
-                if line.rstrip().endswith(' HFold ScanFold'):
-                    writefile.writelines(lines[i].rstrip() + '\n')
-                    try:
-                        sequence = lines[i + 5].rstrip().split(' ')
-                        writefile.writelines(sequence[1] + '\n')
-                    except:
-                        writefile.writelines('HFold ScanFold Sequence ERROR\n')
-                    try:
-                        structure = lines[i + 6].rstrip().split(' ')
-                        writefile.writelines(structure[1] + '\n')
-                    except:
-                        writefile.writelines('HFold ScanFold Structure ERROR\n')
-                    writefile.writelines('\n')
-                    i += 1
-                elif line.rstrip().endswith(' Knotty'):
-                    writefile.writelines(lines[i].rstrip() + '\n')
-                    try:
-                        sequence = lines[i + 1].rstrip().split(' ')
-                        writefile.writelines(sequence[1] + '\n')
-                    except:
-                        writefile.writelines('Knotty Sequence ERROR\n')
-                    try:
-                        structure = lines[i + 2].rstrip().split(' ')
-                        writefile.writelines(structure[1] + '\n')
-                    except:
-                        writefile.writelines('Knotty Structure ERROR\n')
-                    i += 1
-                elif line.rstrip().endswith(' HFold'):
-                    writefile.writelines(lines[i].rstrip() + '\n')
-                    try:
-                        sequence = lines[i + 5].rstrip().split(' ')
-                        writefile.writelines(sequence[1] + '\n')
-                    except:
-                        writefile.writelines('HFold Sequence ERROR\n')
-                    try:
-                        structure = lines[i + 6].rstrip().split(' ')
-                        writefile.writelines(structure[1] + '\n')
-                    except:
-                        writefile.writelines('HFold Structure ERROR\n')
-                    i += 1
-                elif line.rstrip().endswith(' ScanFold'):
-                    writefile.writelines(lines[i].rstrip() + '\n')
-                    try:
-                        writefile.writelines(lines[i + 1].rstrip() + '\n')
-                    except:
-                        writefile.writelines('ScanFold Sequence ERROR\n')
-                    try:
-                        writefile.writelines(lines[i + 2].rstrip() + '\n')
-                    except:
-                        writefile.writelines('ScanFold Structure ERROR\n')
-                    i += 1
-                else:
-                    i += 1
+    with open(pk_writefile, 'w', newline='\n') as writefile, open(pk_readfile, 'r') as readfile:
+        lines = readfile.readlines()
+        for line in lines:
+            if line.rstrip().endswith(' HFold ScanFold'):
+                writefile.writelines(lines[i].rstrip() + '\n')
+                try:
+                    sequence = lines[i + 5].rstrip().split(' ')
+                    writefile.writelines(sequence[1] + '\n')
+                except:
+                    writefile.writelines('HFold ScanFold Sequence ERROR\n')
+                    logging.error(f'PK cleanup error: {lines[i]}')
+                try:
+                    structure = lines[i + 6].rstrip().split(' ')
+                    writefile.writelines(structure[1] + '\n')
+                except:
+                    writefile.writelines('HFold ScanFold Structure ERROR\n')
+                    logging.error(f'PK cleanup error: {lines[i]}')
+                writefile.writelines('\n')
+                i += 1
+            elif line.rstrip().endswith(' Knotty'):
+                writefile.writelines(lines[i].rstrip() + '\n')
+                try:
+                    sequence = lines[i + 1].rstrip().split(' ')
+                    writefile.writelines(sequence[1] + '\n')
+                except:
+                    writefile.writelines('Knotty Sequence ERROR\n')
+                    logging.error(f'PK cleanup error: {lines[i]}')
+                try:
+                    structure = lines[i + 2].rstrip().split(' ')
+                    writefile.writelines(structure[1] + '\n')
+                except:
+                    writefile.writelines('Knotty Structure ERROR\n')
+                    logging.error(f'PK cleanup error: {lines[i]}')
+                i += 1
+            elif line.rstrip().endswith(' HFold'):
+                writefile.writelines(lines[i].rstrip() + '\n')
+                try:
+                    sequence = lines[i + 5].rstrip().split(' ')
+                    writefile.writelines(sequence[1] + '\n')
+                except:
+                    writefile.writelines('HFold Sequence ERROR\n')
+                    logging.error(f'PK cleanup error: {lines[i]}')
+                try:
+                    structure = lines[i + 6].rstrip().split(' ')
+                    writefile.writelines(structure[1] + '\n')
+                except:
+                    writefile.writelines('HFold Structure ERROR\n')
+                    logging.error(f'PK cleanup error: {lines[i]}')
+                i += 1
+            elif line.rstrip().endswith(' ScanFold'):
+                writefile.writelines(lines[i].rstrip() + '\n')
+                try:
+                    writefile.writelines(lines[i + 1].rstrip() + '\n')
+                except:
+                    writefile.writelines('ScanFold Sequence ERROR\n')
+                    logging.error(f'PK cleanup error: {lines[i]}')
+                try:
+                    writefile.writelines(lines[i + 2].rstrip() + '\n')
+                except:
+                    writefile.writelines('ScanFold Structure ERROR\n')
+                    logging.error(f'PK cleanup error: {lines[i]}')
+                i += 1
+            else:
+                i += 1
 
 
-def pk_breakdown(pk_directory,
-                 pk_readfile='pk_clean.txt'):  # Takes clean dbn file (pk_cleanup) and converts into separate dbn files - breaks pseudoknots into individual non-pseudoknotted motifs
+def pk_breakdown(pk_directory, pk_readfile='pk_clean.txt'):
+    # Takes clean DBN file (pk_cleanup) and converts into separate DBN files
+    # Breaks pseudoknots into nested (non-pseudoknotted) motifs
     i = 0
     with open(pk_readfile, 'r') as readfile:
         lines = readfile.readlines()
         for line in lines:
             if line[0] == '>':
                 dbn_header = lines[i].rstrip()
+                # Preserve naming conventions
                 if lines[i + 1].endswith('ERROR') or lines[i + 2].endswith('ERROR'):
                     pk_filename = dbn_header.strip('>').split('_coordinates')
                     pk_header = dbn_header
@@ -505,19 +792,20 @@ def pk_breakdown(pk_directory,
                     pk_filename = pk_filename[0] + '_scanfold.dbn'
                 pk_sequence = lines[i + 1].rstrip()
                 pk_structure = lines[i + 2].rstrip()
+                # Output error files, no need to check for pseudoknots
                 if pk_sequence.endswith('ERROR') or pk_sequence.endswith('source') or pk_structure.endswith(
                         'ERROR') or pk_structure.endswith('HFold'):
-                    with open(os.path.join(pk_directory, pk_filename), 'w', newline='\n') as writefile:
+                    with open(Path.joinpath(pk_directory, pk_filename), 'w', newline='\n') as writefile:
                         writefile.writelines(pk_header + '\n')
                         writefile.writelines(pk_sequence + '\n')
                         writefile.writelines(pk_structure + '\n')
                     i += 1
+                # Check for pseudoknots, if none then output results
                 elif pk_istrue(pk_structure) == False:
-                    pk_structure = pk_structure.replace('[', '(').replace(']', ')').replace('{', '(').replace('}',
-                                                                                                              ')').replace(
-                        '<', '(').replace('>',
-                                          ')')  # Pseudoknot software may use multiple brackets when no pseudoknot is present, this defaults all non-pseudoknot structures to open/close parentheses
-                    with open(os.path.join(pk_directory, pk_filename), 'w', newline='\n') as writefile:
+                    # No pseudoknot is present, so default all non-pseudoknot structures to open/close parentheses
+                    pk_structure = pk_structure.replace('[', '(').replace(']', ')').replace('{', '(').replace('}', ')').replace('<', '(').replace('>', ')')
+                    with open(Path.joinpath(pk_directory, pk_filename), 'w', newline='\n') as writefile:
+                        # Remove unpaired sequence from motifs prior to writing
                         left_pos = 0
                         right_pos = len(pk_sequence)
                         left_brackets = ('(', '[', '{', '<')
@@ -543,26 +831,30 @@ def pk_breakdown(pk_directory,
                         writefile.writelines(pk_structure[left_pos:right_pos] + '\n')
                     i += 1
                 else:
+                    # Pseudoknot is present, will need to be broken down
                     pk_splitter(pk_directory, pk_filename, pk_header, pk_sequence, pk_structure)
                     i += 1
             else:
                 i += 1
 
 
-def pk_istrue(
-        structure):  # Will check for presence of pseudoknots, return either True or False - able to search 4 levels deep (),[],{},<> which is assumed to be enough depth for <200 nt structures
+def pk_istrue(structure):
+    # Will check for presence of pseudoknots, returning either True or False
+    # Able to search 4 levels deep (),[],{},<> which is assumed to be enough depth for <200 nt structures
+    # First eliminate any sequences with only one bracket type (can't be a pseudoknot structure)
     bracket1 = structure.count('(')
     bracket2 = structure.count('[')
     bracket3 = structure.count('{')
     bracket4 = structure.count('<')
-    if bracket1 >= 0 and bracket2 == 0 and bracket3 == 0 and bracket4 == 0:  # Any sequence with only one bracket type can't be a pseudoknot structure
-        return (False)
+    if bracket1 >= 0 and bracket2 == 0 and bracket3 == 0 and bracket4 == 0:
+        return False
     elif bracket1 == 0 and bracket2 > 0 and bracket3 == 0 and bracket4 == 0:
-        return (False)
+        return False
     elif bracket1 == 0 and bracket2 == 0 and bracket3 > 0 and bracket4 == 0:
-        return (False)
+        return False
     elif bracket1 == 0 and bracket2 == 0 and bracket3 == 0 and bracket4 > 0:
-        return (False)
+        return False
+    # Anything left will be checked for non-nested structures
     else:
         ijcoords = {}
         icoords = []
@@ -577,7 +869,8 @@ def pk_istrue(
         ocoords = []
         pcoords = []
         column = 0
-        for character in structure:  # Build lists of coordinates (i, j, etc.)
+        for character in structure:
+            # Build lists of coordinates (i, j, etc.)
             if character == '(':
                 icoords.append(column)
                 column += 1
@@ -604,7 +897,10 @@ def pk_istrue(
                 column += 1
             else:
                 column += 1
-        for jcoord in jcoords:  # Finds matching i,j coordinates by taking the left-most (lowest) j value and pairing it with the right-most (highest) i value that is less than j, then remove that value from the list
+        for jcoord in jcoords:
+            # Finds matching i,j coordinates by taking the left-most (lowest) j value
+            # and pairing it with the right-most (highest) i value that is less than j
+            # then removes that value from the list
             for icoord in icoords[::-1]:
                 if int(icoord) < int(jcoord):
                     ijcoords.update({icoord: jcoord})
@@ -628,56 +924,58 @@ def pk_istrue(
                     opcoords.update({ocoord: pcoord})
                     ocoords.remove(ocoord)
                     break
-        for i, j in ijcoords.items():  # Checks for presence of pseudoknots in all possible base pair bracket configurations
+        for i, j in ijcoords.items():
+            # Checks for presence of pseudoknots in all possible base pair bracket configurations
             for k, l in klcoords.items():
                 if i < k < j < l:
-                    return (True)
+                    return True
                 elif k < i < l < j:
-                    return (True)
+                    return True
                 else:
                     continue
             for m, n in mncoords.items():
                 if i < m < j < n:
-                    return (True)
+                    return True
                 elif m < i < n < j:
-                    return (True)
+                    return True
                 else:
                     continue
             for o, p in opcoords.items():
                 if i < o < j < p:
-                    return (True)
+                    return True
                 elif o < i < p < j:
-                    return (True)
+                    return True
                 else:
                     continue
         for k, l in klcoords.items():
             for m, n in mncoords.items():
                 if k < m < l < n:
-                    return (True)
+                    return True
                 elif m < k < n < l:
-                    return (True)
+                    return True
                 else:
                     continue
             for o, p in opcoords.items():
                 if k < o < l < p:
-                    return (True)
+                    return True
                 elif o < k < p < l:
-                    return (True)
+                    return True
                 else:
                     continue
         for m, n in mncoords.items():
             for o, p in opcoords.items():
                 if m < o < n < p:
-                    return (True)
+                    return True
                 elif o < m < p < n:
-                    return (True)
+                    return True
                 else:
                     continue
-        return (False)
+        # If the script reaches this line, no pseudoknots were found (structure is nested)
+        return False
 
 
-def pk_splitter(dbn_directory, dbn_filename, dbn_header, dbn_sequence,
-                dbn_structure):  # Takes dbn data and breaks it down into multiple non-pseudoknot structures based on bracket notations
+def pk_splitter(dbn_directory, dbn_filename, dbn_header, dbn_sequence, dbn_structure):
+    # Takes DBN data and breaks it down into multiple nested structures
     bracket1 = dbn_structure.count('(')
     bracket2 = dbn_structure.count('[')
     bracket3 = dbn_structure.count('{')
@@ -686,16 +984,19 @@ def pk_splitter(dbn_directory, dbn_filename, dbn_header, dbn_sequence,
     dbn_filename = dbn_filename.rsplit('.dbn')
     dbn_filename = dbn_filename[0]
     if bracket1 > 0:
+        # Add to count so filenames don't override each other
         count += 1
         dbn_filename1 = str(dbn_filename) + '_' + str(count) + '.dbn'
+        # Defaults all extracted structures to open/close parentheses
         dbn_structure1 = dbn_structure.replace('[', '.').replace(']', '.').replace('{', '.').replace('}', '.').replace(
-            '<', '.').replace('>', '.')  # Defaults all extracted structures to open/close parentheses
-        with open(os.path.join(dbn_directory, dbn_filename1), 'w', newline='\n') as writefile:
+            '<', '.').replace('>', '.')
+        with open(Path.joinpath(dbn_directory, dbn_filename1), 'w', newline='\n') as writefile:
             writefile.writelines(dbn_header + ' ' + str(count) + '\n')
+            # Remove unpaired sequence from motifs prior to writing
             left_pos = 0
             right_pos = len(dbn_sequence)
-            left_brackets = ('(')
-            right_brackets = (')')
+            left_brackets = '('
+            right_brackets = ')'
             while True:
                 if left_pos == right_pos:
                     left_pos = 0
@@ -722,12 +1023,12 @@ def pk_splitter(dbn_directory, dbn_filename, dbn_header, dbn_sequence,
         dbn_structure2 = dbn_structure.replace('(', '.').replace(')', '.').replace('{', '.').replace('}', '.').replace(
             '<', '.').replace('>', '.')
         dbn_structure2 = dbn_structure2.replace('[', '(').replace(']', ')')
-        with open(os.path.join(dbn_directory, dbn_filename2), 'w', newline='\n') as writefile:
+        with open(Path.joinpath(dbn_directory, dbn_filename2), 'w', newline='\n') as writefile:
             writefile.writelines(dbn_header + ' ' + str(count) + '\n')
             left_pos = 0
             right_pos = len(dbn_sequence)
-            left_brackets = ('(')
-            right_brackets = (')')
+            left_brackets = '('
+            right_brackets = ')'
             while True:
                 if left_pos == right_pos:
                     left_pos = 0
@@ -754,12 +1055,12 @@ def pk_splitter(dbn_directory, dbn_filename, dbn_header, dbn_sequence,
         dbn_structure3 = dbn_structure.replace('[', '.').replace(']', '.').replace('(', '.').replace(')', '.').replace(
             '<', '.').replace('>', '.')
         dbn_structure3 = dbn_structure3.replace('{', '(').replace('}', ')')
-        with open(os.path.join(dbn_directory, dbn_filename3), 'w', newline='\n') as writefile:
+        with open(Path.joinpath(dbn_directory, dbn_filename3), 'w', newline='\n') as writefile:
             writefile.writelines(dbn_header + ' ' + str(count) + '\n')
             left_pos = 0
             right_pos = len(dbn_sequence)
-            left_brackets = ('(')
-            right_brackets = (')')
+            left_brackets = '('
+            right_brackets = ')'
             while True:
                 if left_pos == right_pos:
                     left_pos = 0
@@ -786,12 +1087,12 @@ def pk_splitter(dbn_directory, dbn_filename, dbn_header, dbn_sequence,
         dbn_structure4 = dbn_structure.replace('[', '.').replace(']', '.').replace('{', '.').replace('}', '.').replace(
             '(', '.').replace(')', '.')
         dbn_structure4 = dbn_structure4.replace('<', '(').replace('>', ')')
-        with open(os.path.join(dbn_directory, dbn_filename4), 'w', newline='\n') as writefile:
+        with open(Path.joinpath(dbn_directory, dbn_filename4), 'w', newline='\n') as writefile:
             writefile.writelines(dbn_header + ' ' + str(count) + '\n')
             left_pos = 0
             right_pos = len(dbn_sequence)
-            left_brackets = ('(')
-            right_brackets = (')')
+            left_brackets = '('
+            right_brackets = ')'
             while True:
                 if left_pos == right_pos:
                     left_pos = 0
@@ -814,27 +1115,28 @@ def pk_splitter(dbn_directory, dbn_filename, dbn_header, dbn_sequence,
             writefile.writelines(dbn_structure4)
 
 
-def cmbuilder_prep(seq_directory, db_directory, dbn_directory, cmbuilder_program, perl_program, rnaframework_directory,
-                   email, rscape_program, r2r_program, cobretti_program,
-                   cm_writefile='cmbuilder'):  # Reads all dbn files and outputs a shell script for cm-builder, based on Vans code
+def cmbuilder_prep(sequence_directory, database_directory, dbn_directory, cmbuilder_program, perl_program,
+                   rnaframework_directory, email, rscape_program, r2r_program, cobretti_program,
+                   cm_writefile='cmbuilder'):
+    # Reads all DBN files and outputs a shell script for cm-builder, based on Van's code
     count = 1
     current_size = 0
-    max_size = 10
-    max_db_size = 8000000000  # Files over 8GB will be run separately to aid with HPC OOM errors
-    current_directory = os.getcwd()
-    all_seq_files = os.listdir(seq_directory)
-    all_db_files = os.listdir(db_directory)
+    max_size = 10  # Number of runs per shell script
+    max_db_size = 8000000000  # Files over 8GB are run separately to aid with HPC out of memory errors
+    all_seq_files = os.listdir(sequence_directory)
+    all_db_files = os.listdir(database_directory)
     all_dbn_files = os.listdir(dbn_directory)
     for dbn_filename in all_dbn_files:
         if dbn_filename.endswith('_error.dbn'):
-            print('Error with pseudoknot motif file(s), check DBN files in /pk_motifs directory and then run stage 1BC')
+            logging.error(
+                'Error with pseudoknot motif file(s), check DBN files in /pk_motifs directory and then run stage 1BC')
             sys.exit()
     for dbn_filename in all_dbn_files:
-        print("dbn_filename: " + str(dbn_filename))
+        logging.debug("dbn_filename: " + str(dbn_filename))
         if dbn_filename.endswith('.dbn'):
             gene = dbn_filename.split('_')[0]
-            dbn_file = str(os.path.join(dbn_directory, dbn_filename))
-            print("current_size: " + str(current_size))
+            dbn_file = str(Path.joinpath(dbn_directory, dbn_filename))
+            logging.debug("current_size: " + str(current_size))
             if current_size == 0:
                 shell_build_start(cm_writefile + '_' + str(count) + '.sh', cm_writefile + str(count), email, mem=100,
                                   tasks=20, notify='FAIL')
@@ -843,16 +1145,16 @@ def cmbuilder_prep(seq_directory, db_directory, dbn_directory, cmbuilder_program
                     writefile.writelines('export PERL5LIB=' + rnaframework_directory + '\n')
             with open(cm_writefile + '_' + str(count) + '.sh', 'a', newline='\n') as writefile:
                 for seq_filename in all_seq_files:
-                    print("seq_filename: " + str(seq_filename))
+                    logging.debug("seq_filename: " + str(seq_filename))
                     if seq_filename.startswith(gene) and (
                             seq_filename.endswith('.fa') or seq_filename.endswith('.fasta')):
-                        seq_file = str(os.path.join(seq_directory, seq_filename))
+                        seq_file = str(Path.joinpath(sequence_directory, seq_filename))
                         for db_filename in all_db_files:
-                            print("db_filename: " + str(db_filename))
+                            logging.debug("db_filename: " + str(db_filename))
                             if db_filename.startswith(gene) and db_filename.endswith('_db.fa'):
-                                db_file = str(os.path.join(db_directory, db_filename))
+                                db_file = str(Path.joinpath(database_directory, db_filename))
                                 db_size = int(os.path.getsize(db_file))
-                                print("db_size and max_db_size: " + str(db_size) + " " + str(max_db_size))
+                                logging.debug("db_size and max_db_size: " + str(db_size) + " " + str(max_db_size))
                                 if db_size > max_db_size:
                                     oversize_db_count = 1
                                     while os.path.isfile(cm_writefile + '_' + gene + str(oversize_db_count) + '.sh'):
@@ -879,8 +1181,8 @@ def cmbuilder_prep(seq_directory, db_directory, dbn_directory, cmbuilder_program
         writefile.writelines('wait;\n')
     shell_build_start('rscape.sh', 'rscape', email, time=1, notify='END,FAIL')
     with open('rscape.sh', 'a', newline='\n') as writefile:
-        #writefile.writelines('export PERL5LIB=' + perl_program + '\n')
-        #writefile.writelines('export PERL5LIB=' + rnaframework_directory + '\n')
+        # writefile.writelines('export PERL5LIB=' + perl_program + '\n')
+        # writefile.writelines('export PERL5LIB=' + rnaframework_directory + '\n')
         rscape_runs = 10
         writefile.writelines(
             'for f in *.stockholm; do ' + rscape_program + ' -s --ntree ' + str(rscape_runs) + ' $f; done\n')
@@ -893,54 +1195,51 @@ def cmbuilder_prep(seq_directory, db_directory, dbn_directory, cmbuilder_program
         writefile.writelines('wait;\n')
 
 
-def cmbuilder_run():  # Console command to sbatch all the cmbuilder shell scripts in current directory
-    current_directory = os.getcwd()
-    all_files = os.listdir(current_directory)
-    for filename in all_files:
-        if filename.startswith('cmbuilder') and filename.endswith('.sh'):
-            os.system('sbatch ' + filename)
+def cmbuilder_run(working_directory):
+    # Run cm-builder shell scripts
+    for filepath in working_directory.glob('cmbuilder_*.sh'):
+        logging.debug(f'cm-builder shell path: {filepath}')
+        os.system(f'sbatch {filepath.name}')
 
 
 def cmbuilder_cleanup():  # Clean up working directory, run R-Scape
-    current_directory = os.getcwd()
     folders = ['cm', 'dbn', 'out', 'sh']
     for folder in folders:
-        folder_make(current_directory, folder)
+        Path.mkdir(Path.joinpath(current_directory, folder), exist_ok=True)
     all_files = os.listdir(current_directory)
     for filename in all_files:
         for folder in folders:
             if filename != 'rscape.sh':
                 try:
-                    if os.path.isdir(os.path.join(current_directory, filename)):
+                    if os.path.isdir(Path.joinpath(current_directory, filename)):
                         if filename.startswith('tmp'):
                             shutil.rmtree(filename)
                     else:
                         if filename.endswith(folder):
-                            shutil.move(os.path.join(current_directory, filename),
-                                        os.path.join(current_directory, folder, filename))
+                            shutil.move(Path.joinpath(current_directory, filename),
+                                        Path.joinpath(current_directory, folder, filename))
                 except:
-                    pass
+                    logging.error(f'Unable to move file: {filename}')
     os.system('sbatch rscape.sh')  # Automatically starts cmbuilder_cleanup2 upon completion of shell script
 
 
 def cmbuilder_cleanup2(
         cm_writefile='covariance.txt'):  # Move remaining files into folders, write covariance power and output to file
-    current_directory = os.getcwd()
     covariance_read(cm_writefile)
     folders = ['bak', 'cm', 'cov', 'dbn', 'out', 'pdf', 'power', 'ps', 'sh', 'sto', 'stockholm', 'surv', 'svg']
     for folder in folders:
-        folder_make(current_directory, folder)
+        Path.mkdir(Path.joinpath(current_directory, folder), exist_ok=True)
     all_files = os.listdir(current_directory)
     for filename in all_files:
         for folder in folders:
             if not filename.endswith('Rscape.pdf'):
-                if not os.path.isdir(os.path.join(current_directory, filename)):
+                if not os.path.isdir(Path.joinpath(current_directory, filename)):
                     if filename.endswith(folder):
                         try:
-                            shutil.move(os.path.join(current_directory, filename),
-                                        os.path.join(current_directory, folder, filename))
+                            shutil.move(Path.joinpath(current_directory, filename),
+                                        Path.joinpath(current_directory, folder, filename))
                         except:
-                            pass
+                            logging.error(f'Unable to move file: {filename}')
 
 
 def covariance_read(
@@ -948,7 +1247,6 @@ def covariance_read(
     with open(cm_writefile, 'w', newline='\n') as writefile:
         writefile.writelines(
             f'Name\tBPs\tavg_substitutions\texpected BPs\tSTD_DEV\tObserved BPs\t# of BP power 0-0.1\t# of BP power 0.1-0.25\t# of BP power >=0.25\t0-0.1 BP info\t0.1-0.25 BP info\t>=0.25 BP info\n')
-        current_directory = os.getcwd()
         all_files = os.listdir(current_directory)
         for filename in all_files:
             if filename.endswith('.power'):
@@ -989,17 +1287,16 @@ def covariance_read(
 
 def SimRNA_prep(SimRNA_directory, email, config_file='None', instances=8, replicas=10,
                 simrna_writefile='simrna'):  # Writes shell scripts for optimized SimRNA runs
-    SimRNA_program = os.path.join(SimRNA_directory, 'SimRNA')
-    SimRNA_data = os.path.join(SimRNA_directory, 'data')
-    SimRNA_clustering = os.path.join(SimRNA_directory, 'clustering')
-    SimRNA_trafl2pdb = os.path.join(SimRNA_directory, 'SimRNA_trafl2pdbs')
+    SimRNA_program = Path.joinpath(SimRNA_directory, 'SimRNA')
+    SimRNA_data = Path.joinpath(SimRNA_directory, 'data')
+    SimRNA_clustering = Path.joinpath(SimRNA_directory, 'clustering')
+    SimRNA_trafl2pdb = Path.joinpath(SimRNA_directory, 'SimRNA_trafl2pdbs')
     if config_file == 'None':
-        SimRNA_config = os.path.join(SimRNA_directory, 'config.dat')
+        SimRNA_config = Path.joinpath(SimRNA_directory, 'config.dat')
     else:
         SimRNA_config = config_file
-    current_directory = os.getcwd()
-    data_link = os.path.join(current_directory, 'data')
-    if os.path.exists(data_link) != True:
+    data_link = Path.joinpath(current_directory, 'data')
+    if Path.exists(data_link) != True:
         os.symlink(SimRNA_data, data_link)
     file_count = 1
     all_files = os.listdir(current_directory)
@@ -1015,7 +1312,7 @@ def SimRNA_prep(SimRNA_directory, email, config_file='None', instances=8, replic
                     writefile.write(line[1])
                     sequence_length = len(line[1])
                     rmsd.append(float(sequence_length / 10.0))
-                    # print(rmsd)
+                    # logging.debug(rmsd)
                 with open(structure_tempfile, 'w', newline='\n') as writefile:
                     pk_count = line[2].count('[') + line[2].count('{') + line[2].count('<')
                     if pk_count == 0:
@@ -1048,9 +1345,9 @@ def SimRNA_prep(SimRNA_directory, email, config_file='None', instances=8, replic
                         SimRNA_program, SimRNA_config, replicas, sequence_tempfile, structure_tempfile, dbn_headers,
                         random.randint(0, 9999999999), dbn_headers))
                 elif instances < 1:
-                    print('error in number of instances: less than one')
+                    logging.error('error in number of instances: less than one')
                 elif instances > 100:
-                    print('error in number of instances: too big')
+                    logging.error('error in number of instances: too big')
                 else:
                     for instance_count in range(instances):
                         writefile.writelines('%s -c %s -E %s -s %s -S %s -o %s' % (
@@ -1106,54 +1403,51 @@ def SimRNA_prep(SimRNA_directory, email, config_file='None', instances=8, replic
 
 
 def SimRNA_run():
-    current_directory = os.getcwd()
     all_files = os.listdir(current_directory)
     for filename in all_files:
         if filename.startswith('simrna') and filename.endswith('.sh'):
-            os.system('sbatch ' + filename)
+            os.system(f'sbatch {filename}')
 
 
 def SimRNA_cleanup():
-    current_directory = os.getcwd()
     folders = ['out', 'sh', 'log', 'trafl', 'motifs', 'bonds', 'ss_detected', 'models', 'cluster_models']
     for folder in folders:
-        folder_make(current_directory, folder)
+        Path.mkdir(Path.joinpath(current_directory, folder), exist_ok=True)
     all_files = os.listdir(current_directory)
     for filename in all_files:
-        if not os.path.isdir(os.path.join(current_directory, filename)):
+        if not os.path.isdir(Path.joinpath(current_directory, filename)):
             if filename.endswith('_clust.log') or filename.endswith('_AA.pdb') or (
                     filename.endswith('.ss_detected') and filename.__contains__('clust')):
                 try:
-                    shutil.move(os.path.join(current_directory, filename),
-                                os.path.join(current_directory, 'cluster_models', filename))
+                    shutil.move(Path.joinpath(current_directory, filename),
+                                Path.joinpath(current_directory, 'cluster_models', filename))
                 except:
-                    pass
+                    logging.error(f'Unable to move file: {filename}')
             elif (filename.endswith('.structure') or filename.endswith('.sequence') or filename.endswith('.dbn')):
                 try:
-                    shutil.move(os.path.join(current_directory, filename),
-                                os.path.join(current_directory, 'motifs', filename))
+                    shutil.move(Path.joinpath(current_directory, filename),
+                                Path.joinpath(current_directory, 'motifs', filename))
                 except:
-                    pass
+                    logging.error(f'Unable to move file: {filename}')
             elif filename.endswith('.pdb'):
                 try:
-                    shutil.move(os.path.join(current_directory, filename),
-                                os.path.join(current_directory, 'models', filename))
+                    shutil.move(Path.joinpath(current_directory, filename),
+                                Path.joinpath(current_directory, 'models', filename))
                 except:
-                    pass
+                    logging.error(f'Unable to move file: {filename}')
             for folder in folders:
                 if filename.endswith(folder):
                     try:
-                        shutil.move(os.path.join(current_directory, filename),
-                                    os.path.join(current_directory, folder, filename))
+                        shutil.move(Path.joinpath(current_directory, filename),
+                                    Path.joinpath(current_directory, folder, filename))
                     except:
-                        pass
+                        logging.error(f'Unable to move file: {filename}')
 
 
 def QRNAS_prep(qrnas_program, qrnas_ff_directory, email):
     count = 1
     current_size = 0
     max_size = 10
-    current_directory = os.getcwd()
     cluster_directory = folder_check(current_directory, 'cluster_models')
     all_files = os.listdir(cluster_directory)
     for filename in all_files:
@@ -1169,7 +1463,7 @@ def QRNAS_prep(qrnas_program, qrnas_ff_directory, email):
                     writefile.writelines('export QRNAS_FF_DIR=' + qrnas_ff_directory + '\n')
             with open('qrnas_' + str(count) + '.sh', 'a', newline='\n') as writefile:
                 writefile.writelines(
-                    '%s -i %s -o %s &\n' % (qrnas_program, os.path.join(cluster_directory, filename), output_file))
+                    '%s -i %s -o %s &\n' % (qrnas_program, Path.joinpath(cluster_directory, filename), output_file))
                 current_size += 1
             if current_size >= max_size:
                 with open('qrnas_' + str(count) + '.sh', 'a', newline='\n') as writefile:
@@ -1182,38 +1476,35 @@ def QRNAS_prep(qrnas_program, qrnas_ff_directory, email):
 
 
 def QRNAS_run():
-    current_directory = os.getcwd()
     all_files = os.listdir(current_directory)
     for filename in all_files:
         if filename.startswith('qrnas') and filename.endswith('.sh'):
-            os.system('sbatch ' + filename)
+            os.system(f'sbatch {filename}')
 
 
 def QRNAS_cleanup():
-    current_directory = os.getcwd()
     folders = ['out', 'sh', 'log', 'qrnas_models']
     for folder in folders:
-        folder_make(current_directory, folder)
+        Path.mkdir(Path.joinpath(current_directory, folder), exist_ok=True)
     all_files = os.listdir(current_directory)
     for filename in all_files:
-        if not os.path.isdir(os.path.join(current_directory, filename)):
+        if not os.path.isdir(Path.joinpath(current_directory, filename)):
             if filename.endswith('_AA_QRNAS.pdb'):
                 try:
-                    shutil.move(os.path.join(current_directory, filename),
-                                os.path.join(current_directory, 'qrnas_models', filename))
+                    shutil.move(Path.joinpath(current_directory, filename),
+                                Path.joinpath(current_directory, 'qrnas_models', filename))
                 except:
-                    pass
+                    logging.error(f'Unable to move file: {filename}')
             for folder in folders:
                 if filename.endswith(folder):
                     try:
-                        shutil.move(os.path.join(current_directory, filename),
-                                    os.path.join(current_directory, folder, filename))
+                        shutil.move(Path.joinpath(current_directory, filename),
+                                    Path.joinpath(current_directory, folder, filename))
                     except:
-                        pass
+                        logging.error(f'Unable to move file: {filename}')
 
 
-def ARES_prep(ares_directory, ares_environment, email):
-    current_directory = os.getcwd()
+def ares_prep(ares_directory, ares_environment, email):
     qrnas_directory = folder_check(current_directory,
                                    'qrnas_models')  # ARES runs on ALL PDBs within the directory provided - including subdirectories. If running ARES alone, isolate PDB files in a subdirectory to avoid running unoptimized models
     shell_build_start('ares.sh', 'ares', email, nodes=8, mem=10, notify='END,FAIL')
@@ -1224,41 +1515,38 @@ def ARES_prep(ares_directory, ares_environment, email):
             qrnas_directory, current_directory))
 
 
-def ARES_run():
+def ares_run():
     os.system('sbatch ares.sh')
 
 
 def fpocket_run(fpocket_program):
-    current_directory = os.getcwd()
     qrnas_directory = folder_check(current_directory, 'qrnas_models')
     all_files = os.listdir(qrnas_directory)
     for filename in all_files:
         if filename.endswith('_QRNAS.pdb'):
-            os.system(fpocket_program + ' -f ' + str(os.path.join(qrnas_directory, filename)))
+            os.system(f'{fpocket_program} -f {str(Path.joinpath(qrnas_directory, filename))}')
 
 
 def fpocket_cleanup():
-    current_directory = os.getcwd()
-    folder_make(current_directory, 'pockets')
-    pocket_directory = os.path.join(current_directory, 'pockets')
+    Path.mkdir(Path.joinpath(current_directory, 'pockets'), exist_ok=True)
+    pocket_directory = Path.joinpath(current_directory, 'pockets')
     qrnas_directory = folder_check(current_directory, 'qrnas_models')
     all_files = os.listdir(qrnas_directory)
     for filename in all_files:
-        if os.path.isdir(os.path.join(qrnas_directory, filename)) and filename != 'pockets':
+        if os.path.isdir(Path.joinpath(qrnas_directory, filename)) and filename != 'pockets':
             try:
-                shutil.move(os.path.join(qrnas_directory, filename), os.path.join(pocket_directory, filename))
+                shutil.move(Path.joinpath(qrnas_directory, filename), Path.joinpath(pocket_directory, filename))
             except:
-                pass
+                logging.error(f'Unable to move file: {filename}')
 
 
 def fpocket_read():
-    current_directory = os.getcwd()
     with open('pockets.txt', 'w', newline='\n') as writefile:
         writefile.writelines('Model Fold RMSD Cluster Pocket Score Druggability\n')
         pocket_directory = folder_check(current_directory, 'pockets')
         all_models = os.listdir(pocket_directory)
         for model_directory in all_models:
-            all_files = os.listdir(os.path.join(pocket_directory, model_directory))
+            all_files = os.listdir(Path.joinpath(pocket_directory, model_directory))
             for filename in all_files:
                 if filename.endswith('_info.txt'):
                     model = ''
@@ -1278,7 +1566,7 @@ def fpocket_read():
                                 cluster = header[i + 1].split('-')[0]
                         except:
                             pass
-                    with open(os.path.join(pocket_directory, model_directory, filename), 'r') as readfile:
+                    with open(Path.joinpath(pocket_directory, model_directory, filename), 'r') as readfile:
                         lines = readfile.readlines()
                         for line in lines:
                             if line.startswith('Pocket'):
@@ -1295,330 +1583,32 @@ def fpocket_read():
 
 
 def dock6_prep():
-    # read SimRNA pdb and pocket pdb (might need dummy molecule?), convert to mol2 format, add hydrogens and charges, make surface file (Google "Chimera Programmer's Guide")
-    # find and center on pocket
-    # location of wmoss-lab ZINC15 database(s), copy database of choice to working directory? Or just reference
-    # copy /in files
-    # write shell script(s)
-    # write INSPH file
-    print('WIP')
+    # read SimRNA pdb and pocket pdb (might need dummy molecule?), convert to mol2 format, add hydrogens and charges,
+    # make surface file (Google "Chimera Programmer's Guide") find and center on pocket location of wmoss-lab ZINC15
+    # database(s), copy database of choice to working directory? Or just reference copy /in files write shell script(
+    # s) write INSPH file
+    logging.error('DOCK 6 is a WIP')
 
 
 def dock6_run():
-    current_directory = os.getcwd()
     all_files = os.listdir(current_directory)
     for filename in all_files:
         if filename.startswith('dock') and filename.endswith('.sh'):
-            os.system('sbatch ' + filename)
+            os.system(f'sbatch {filename}')
 
 
-def AnnapuRNA_run():
+def annapurna_run():
     # AnnapuRNA directory, read current directory, find dock results
     # run AnnapuRNA on results
     # module load rnaframe/2.7.2
     # annapurna_env (might not need for shell)
     # run_annapurna_env annapurna.py -r 1AJU.pdb -l ARG.sdf -m kNN_modern -o output --groupby
-    print('WIP')
-
-
-def main():
-    current_directory = os.getcwd()
-
-    """PROGRAM LOCATIONS"""
-    cobretti_program = '/work/LAS/wmoss-lab/scripts/cobretti.py'
-    ScanFold_program = '/work/LAS/wmoss-lab/scripts/ScanFold.py'
-    ScanFold2_program = '/work/LAS/wmoss-lab/scripts/ScanFold2.0-inforna/ScanFoldBothForInforna.py'
-    ScanFold2_environment = '/work/LAS/wmoss-lab/programs/envs/ScanFold2'
-    cmbuilder_program = '/work/LAS/wmoss-lab/scripts/labtools/cm-builder'
-    RScape_program = '/work/LAS/wmoss-lab/programs/rscape_v2.0.0.k/bin/R-scape'
-    R2R_program = '/work/LAS/wmoss-lab/programs/R2R-1.0.6/src/r2r'
-    Perl_directory = '/work/LAS/wmoss-lab/programs/lib/perl5/'
-    RNAFramework_directory = '/work/LAS/wmoss-lab/programs/RNAFramework/lib/'
-    Knotty_program = '/work/LAS/wmoss-lab/programs/knotty/knotty'
-    HFold_program = '/work/LAS/wmoss-lab/programs/hfold/HFold_iterative'
-    SimRNA_directory = '/work/LAS/wmoss-lab/programs/SimRNA'
-    QRNAS_program = '/work/LAS/wmoss-lab/programs/qrnas/QRNA'
-    QRNAS_ff = '/work/LAS/wmoss-lab/programs/qrnas/forcefield'
-    ARES_program = '/work/LAS/wmoss-lab/programs/ares'
-    ARES_environment = '/work/LAS/wmoss-lab/programs/envs/ares'
-    fpocket_program = '/work/LAS/wmoss-lab/programs/fpocket2/bin/fpocket'
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-stage', type=str, default='0', help='input stage number to run')
-    parser.add_argument('-email', type=str, default='', help='input email address')
-
-    parser.add_argument('-i', type=str, default='', help='input list of fasta accession numbers (stage 1A)')
-    parser.add_argument('-seq', type=str, default=current_directory, help='input location of fasta sequences')
-    parser.add_argument('-db', type=str, default=current_directory, help='input location of BLAST sequence files')
-    parser.add_argument('-dbn', type=str, default=current_directory, help='input location of fasta sequences')
-    parser.add_argument('-pk', type=str, default=current_directory, help='input location of pseudoknot motifs')
-    parser.add_argument('-set_dbn_extend', type=bool, default=True, help='extend pseudoknot motifs')
-
-    parser.add_argument('-cobretti', type=str, default=cobretti_program, help='input location of cobretti.py')
-    parser.add_argument('-sf', type=str, default=ScanFold_program, help='input location of ScanFold.py')
-    parser.add_argument('-sf2', type=str, default=ScanFold2_program, help='input location of ScanFold2.0.py')
-    parser.add_argument('--sf2env', type=str, default=ScanFold2_environment, help='input location of ScanFold2.0 conda environment')
-    parser.add_argument('-cmb', type=str, default=cmbuilder_program, help='input location of cm-builder')
-    parser.add_argument('-rs', type=str, default=RScape_program, help='input location of R-Scape')
-    parser.add_argument('-r2r', type=str, default=R2R_program, help='input location of R2R')
-    parser.add_argument('-perl', type=str, default=Perl_directory,
-                        help='input location of Perl directory (perl5) (for R-Scape)')
-    parser.add_argument('-rf', type=str, default=RNAFramework_directory,
-                        help='input location of RNAFramework directory (RNAFramework/lib/) (for R-Scape)')
-    parser.add_argument('-ky', type=str, default=Knotty_program, help='input location of Knotty (knotty)')
-    parser.add_argument('-hf', type=str, default=HFold_program,
-                        help='input location of Iterative HFold (HFold_iterative)')
-    parser.add_argument('-sim', type=str, default=SimRNA_directory, help='input location of SimRNA directory')
-    parser.add_argument('-qrnas', type=str, default=QRNAS_program, help='input location of QRNAS')
-    parser.add_argument('-qrnasff', type=str, default=QRNAS_ff, help='input location of QRNAS force field')
-    parser.add_argument('-ares', type=str, default=ARES_program, help='input location of ARES')
-    parser.add_argument('-aresenv', type=str, default=ARES_environment, help='input location of ARES conda environment')
-    parser.add_argument('-fpocket', type=str, default=fpocket_program, help='input location of fpocket')
-
-    args = parser.parse_args()
-    fasta_list = args.i
-    stage = args.stage
-    email = args.email
-    seq_dir = args.seq
-    db_dir = args.db
-    dbn_dir = args.dbn
-    pk_dir = args.pk
-    set_dbn_extend = args.set_dbn_extend
-    cobretti_prog = args.cobretti
-    scanfold_prog = args.sf
-    scanfold2_prog = args.sf2
-    scanfold2_env = args.sf2env
-    cmbuilder_prog = args.cmb
-    rscape_prog = args.rs
-    r2r_prog = args.r2r
-    perl_prog = args.perl
-    rnaframework_dir = args.rf
-    knotty_prog = args.ky
-    hfold_prog = args.hf
-    simrna_dir = args.sim
-    qrnas_prog = args.qrnas
-    qrnas_ff = args.qrnasff
-    ares_prog = args.ares
-    ares_env = args.aresenv
-    fpocket_prog = args.fpocket
-
-    """STAGES"""
-    if email == '':
-        print('No email provided, use "-email" to define string. Exiting...')
-        sys.exit()
-    if stage == '0':
-        print('No stage specified, use "-stage" to define string (e.g., "1A"). Exiting...')
-        sys.exit()
-
-    elif stage == '1A':
-        if seq_dir == current_directory:
-            folder_make(seq_dir, 'sequences')
-            seq_dir = os.path.join(seq_dir, 'sequences')
-        if fasta_list != '':
-            fasta_build(fasta_list, seq_dir, email)
-        else:
-            all_files = os.listdir(current_directory)
-            for filename in all_files:
-                if filename.endswith('.fa') or filename.endswith('.fasta'):
-                    try:
-                        with open(os.path.join(current_directory, filename), 'r') as readfile:
-                            stage_1A_lines = readfile.readlines()
-                            stage_1A_name = stage_1A_lines[0].rstrip().replace('.', '-').replace('_', '-').strip('>').split(' ')[0] + '.fasta'
-                        shutil.move(os.path.join(current_directory, filename), os.path.join(seq_dir, stage_1A_name))
-                    except:
-                        pass
-        ScanFold2_prep(seq_dir, scanfold2_prog, scanfold2_env, email)
-        ScanFold2_run()
-        if db_dir == current_directory:
-            folder_make(db_dir, 'databases')
-            db_dir = os.path.join(db_dir, 'databases')
-        blast_prep(seq_dir, db_dir, email)
-        blast_run()
-    elif stage == '1A1':  # Legacy code to run ScanFold 1.0 and BLAST
-        if seq_dir == current_directory:
-            folder_make(seq_dir, 'sequences')
-            seq_dir = os.path.join(seq_dir, 'sequences')
-        if fasta_list != '':
-            fasta_build(fasta_list, seq_dir, email)
-        else:
-            all_files = os.listdir(current_directory)
-            for filename in all_files:
-                if filename.endswith('.fa') or filename.endswith('.fasta'):
-                    try:
-                        with open(os.path.join(current_directory, filename), 'r') as readfile:
-                            stage_1A_lines = readfile.readlines()
-                            stage_1A_name = stage_1A_lines[0].rstrip().replace('.', '-').replace('_', '-').strip('>').split(' ')[0] + '.fasta'
-                        shutil.move(os.path.join(current_directory, filename), os.path.join(seq_dir, stage_1A_name))
-                    except:
-                        pass
-        ScanFold_prep(seq_dir, scanfold_prog, email)
-        ScanFold_run()
-        if db_dir == current_directory:
-            folder_make(db_dir, 'databases')
-            db_dir = os.path.join(db_dir, 'databases')
-        blast_prep(seq_dir, db_dir, email)
-        blast_run()
-    elif stage == '1AA':
-        #print('1AA: ' + stage)
-        if seq_dir == current_directory:
-            folder_make(seq_dir, 'sequences')
-            seq_dir = os.path.join(seq_dir, 'sequences')
-        if fasta_list != '':
-            fasta_build(fasta_list, seq_dir, email)
-        else:
-            all_files = os.listdir(current_directory)
-            for filename in all_files:
-                if filename.endswith('.fa') or filename.endswith('.fasta'):
-                    try:
-                        with open(os.path.join(current_directory, filename), 'r') as readfile:
-                            stage_1AA_lines = readfile.readlines()
-                            stage_1AA_name = stage_1AA_lines[0].rstrip().replace('.', '-').replace('_', '-').strip('>').split(' ')[0] + '.fasta'
-                        shutil.move(os.path.join(current_directory, filename), os.path.join(seq_dir, stage_1AA_name))
-                    except:
-                        pass
-        ScanFold2_prep(seq_dir, scanfold2_prog, scanfold2_env, email)
-        ScanFold2_run()
-    elif stage == '1AA1':  # Legacy code to run ScanFold 1.0 only
-        #print('1AA1: ' + stage)
-        if seq_dir == current_directory:
-            folder_make(seq_dir, 'sequences')
-            seq_dir = os.path.join(seq_dir, 'sequences')
-        if fasta_list != '':
-            fasta_build(fasta_list, seq_dir, email)
-        else:
-            all_files = os.listdir(current_directory)
-            for filename in all_files:
-                if filename.endswith('.fa') or filename.endswith('.fasta'):
-                    try:
-                        with open(os.path.join(current_directory, filename), 'r') as readfile:
-                            stage_1AA_lines = readfile.readlines()
-                            stage_1AA_name = stage_1AA_name = stage_1AA_lines[0].rstrip().replace('.', '-').replace('_', '-').strip('>').split(' ')[0] + '.fasta'
-                        shutil.move(os.path.join(current_directory, filename), os.path.join(seq_dir, stage_1AA_name))
-                    except:
-                        pass
-        ScanFold_prep(seq_dir, scanfold_prog, email)
-        ScanFold_run()
-    elif stage == '1AB':
-        if seq_dir == current_directory:
-            seq_dir = folder_check(seq_dir, 'sequences')
-        if db_dir == current_directory:
-            folder_make(db_dir, 'databases')
-            db_dir = os.path.join(db_dir, 'databases')
-        blast_prep(seq_dir, db_dir, email)
-        blast_run()
-
-    elif stage == '1B':
-        if seq_dir == current_directory:
-            seq_dir = folder_check(seq_dir, 'sequences')
-        if db_dir == current_directory:
-            db_dir = folder_check(db_dir, 'databases')
-        if dbn_dir == current_directory:
-            folder_make(dbn_dir, 'motifs')
-            dbn_dir = os.path.join(dbn_dir, 'motifs')
-        blast_cleanup(db_dir, dbn_dir)
-        if pk_dir == current_directory:
-            folder_make(pk_dir, 'pk_motifs')
-            pk_dir = os.path.join(pk_dir, 'pk_motifs')
-        if set_dbn_extend == True:
-            extend_motifs(seq_dir, dbn_dir)
-        pk_fold(knotty_prog, hfold_prog)
-        pk_cleanup()
-        pk_breakdown(pk_dir)
-        cmbuilder_prep(seq_dir, db_dir, pk_dir, cmbuilder_prog, perl_prog, rnaframework_dir, email, rscape_prog,r2r_prog,
-                       cobretti_prog)
-        cmbuilder_run()
-    elif stage == '1BA':
-        if seq_dir == current_directory:
-            seq_dir = folder_check(seq_dir, 'sequences')
-        if db_dir == current_directory:
-            db_dir = folder_check(db_dir, 'databases')
-        if dbn_dir == current_directory:
-            folder_make(dbn_dir, 'motifs')
-            dbn_dir = os.path.join(dbn_dir, 'motifs')
-        blast_cleanup(db_dir, dbn_dir)
-    elif stage == '1BB':
-        if seq_dir == current_directory:
-            seq_dir = folder_check(seq_dir, 'sequences')
-        if dbn_dir == current_directory:
-            dbn_dir = folder_check(dbn_dir, 'motifs')
-        if pk_dir == current_directory:
-            folder_make(pk_dir, 'pk_motifs')
-            pk_dir = os.path.join(pk_dir, 'pk_motifs')
-        if set_dbn_extend == True:  # set_dbn_extend to False if 'extended.dbn' was made correctly but pks failed
-            extend_motifs(seq_dir, dbn_dir)
-        pk_fold(knotty_prog, hfold_prog)
-        pk_cleanup()
-        pk_breakdown(pk_dir)
-    elif stage == '1BC':  # Substages in case of run failure after PK files are made (usually due to mismatch in db/dbn/fasta file locations/naming convention)
-        if seq_dir == current_directory:
-            seq_dir = folder_check(seq_dir, 'sequences')
-        if db_dir == current_directory:
-            db_dir = folder_check(db_dir, 'databases')
-        if pk_dir == current_directory:
-            pk_dir = folder_check(pk_dir, 'pk_motifs')
-        cmbuilder_prep(seq_dir, db_dir, pk_dir, cmbuilder_prog, perl_prog, rnaframework_dir, email, rscape_prog,r2r_prog,
-                       cobretti_prog)
-        cmbuilder_run()
-    elif stage == '1BC1':  # Substage to troubleshoot cmbuilder_prep
-        if seq_dir == current_directory:
-            seq_dir = folder_check(seq_dir, 'sequences')
-        if db_dir == current_directory:
-            db_dir = folder_check(db_dir, 'databases')
-        if pk_dir == current_directory:
-            pk_dir = folder_check(pk_dir, 'pk_motifs')
-        cmbuilder_prep(seq_dir, db_dir, pk_dir, cmbuilder_prog, perl_prog, rnaframework_dir, email, rscape_prog,r2r_prog,
-                       cobretti_prog)
-
-    elif stage == '1C':
-        cmbuilder_cleanup()
-    elif stage == '1CA':  # Substage to finish cleanup upon conclusion of R-Scape run
-        cmbuilder_cleanup2()
-
-    elif stage == '2A':
-        SimRNA_prep(simrna_dir, email)
-        SimRNA_run()
-    elif stage == '2AA':
-        SimRNA_prep(simrna_dir, email)
-    elif stage == '2AB':
-        SimRNA_run()
-
-    elif stage == '2B':
-        SimRNA_cleanup()
-        QRNAS_prep(qrnas_prog, qrnas_ff, email)
-        QRNAS_run()
-    elif stage == '2BA':
-        SimRNA_cleanup()
-    elif stage == '2BB':
-        QRNAS_prep(qrnas_prog, qrnas_ff, email)
-    elif stage == '2BC':
-        QRNAS_run()
-
-    elif stage == '2C':
-        QRNAS_cleanup()
-        ARES_prep(ares_prog, ares_env, email)
-        ARES_run()
-    elif stage == '2CA':
-        QRNAS_cleanup()
-    elif stage == '2CB':
-        ARES_prep(ares_prog, ares_env, email)
-        ARES_run()
-
-    elif stage == '2D':  # Separated out to avoid ARES reading fpocket .pdb files in subdirectories and to allow for final stage cleanup
-        fpocket_run(fpocket_prog)
-        fpocket_cleanup()
-        fpocket_read()
-
-    elif stage == '3A':
-        dock6_prep()
-        dock6_run()
-
-    elif stage == '3B':
-        AnnapuRNA_run()
-
-    else:
-        print('Incorrect stage specified, use "-stage" to define string (e.g., "1A"). Exiting...')
-        sys.exit()
+    logging.error('AnnapuRNA is a WIP')
 
 
 if __name__ == "__main__":
+    logging.basicConfig(stream=sys.stdout,
+                        format='%(asctime)s %(levelname)s %(process)d: %(message)s',
+                        level=logging.INFO)
     main()
+    logging.info('Cobretti run completed successfully!')
