@@ -158,7 +158,7 @@ def main():
     # Checksum to see if any stage(s) ran
     is_stage = False
 
-    if stage == ('1A' or '1AA' or '1AB' or '1A1' or '1A1A'):
+    if stage in ('1A', '1AA', '1AB', '1A1', '1A1A'):
         # Prepare files for ScanFold run
         is_stage = True
         logging.info('Preparing sequence files...')
@@ -182,21 +182,21 @@ def main():
                 except:
                     logging.error(f'Unable to move file: {filepath.name}')
 
-    if stage == ('1A' or '1AA'):
+    if stage in ('1A', '1AA'):
         # Run ScanFold 2.0
         is_stage = True
         logging.info('Running ScanFold 2.0...')
         scanfold2_prep(sequence_directory, scanfold2_program, scanfold2_environment, email)
         scanfold2_run(current_directory)
 
-    if stage == ('1A1' or '1A1A'):
+    if stage in ('1A1','1A1A'):
         # Legacy code to run ScanFold 1.0
         is_stage = True
         logging.info('Running ScanFold 1.0...')
         scanfold_prep(sequence_directory, scanfold_program, email)
         scanfold_run(current_directory)
 
-    if stage == ('1A' or '1AB' or '1A1'):
+    if stage in ('1A', '1AB', '1A1'):
         # Run NCBI BLAST using Pronto databases, save results to database directory
         is_stage = True
         logging.info('Running BLAST...')
@@ -207,7 +207,7 @@ def main():
         blast_prep(sequence_directory, database_directory, email)
         blast_run(current_directory)
 
-    if stage == ('1B' or '1BA' or '1BB' or '1BC' or '1BC1'):
+    if stage in ('1B', '1BA', '1BB', '1BC', '1BC1'):
         # Build/set locations of files
         is_stage = True
         logging.info('Preparing files for PK/cm-builder...')
@@ -224,13 +224,13 @@ def main():
             Path.mkdir(Path.joinpath(current_directory, 'pk_motifs'), exist_ok=True)
             pk_directory = Path.joinpath(current_directory, 'pk_motifs')
 
-    if stage == ('1B' or '1BA'):
+    if stage in ('1B', '1BA'):
         # Move BLAST files and edit databases to make them more readable
         is_stage = True
         logging.info('Optimizing BLAST databases...')
         blast_cleanup(current_directory, database_directory, dbn_directory)
 
-    if stage == ('1B' or '1BB'):
+    if stage in ('1B', '1BB'):
         # Refold motifs using Knotty and HFold
         is_stage = True
         if set_dbn_extend:
@@ -244,7 +244,7 @@ def main():
         logging.info('Nesting pseudoknots...')
         pk_breakdown(pk_directory)
 
-    if stage == ('1B' or '1BC' or '1BC1'):
+    if stage in ('1B', '1BC', '1BC1'):
         # Prepare cm-builder files, stage 1BC1 will NOT run them
         is_stage = True
         logging.info('Preparing cm-builder scripts...')
@@ -252,73 +252,73 @@ def main():
                        r2r_program,
                        cobretti_program, perl_program, rnaframework_directory)
 
-    if stage == ('1B' or '1BC'):
+    if stage in ('1B', '1BC'):
         # Run cm-builder shell scripts
         is_stage = True
         logging.info('Running cm-builder scripts...')
         cmbuilder_run(current_directory)
 
-    if stage == '1C':
+    if stage in ('1C'):
         # Clean up cm-builder runs and run R-Scape
         is_stage = True
         logging.info('Organizing files and running R-Scape...')
         cmbuilder_cleanup(current_directory)
 
-    if stage == ('1C' or '1CA'):
+    if stage in ('1C', '1CA'):
         # Substage called by R-Scape script to organize remaining files
         is_stage = True
         logging.info('R-Scape complete, organizing results...')
         cmbuilder_cleanup2(current_directory)
 
-    if stage == ('2A' or '2AA'):
+    if stage in ('2A', '2AA'):
         # Prepare SimRNA scripts
         is_stage = True
         logging.info('Preparing SimRNA scripts...')
         simrna_prep(current_directory, simrna_directory, email)
 
-    if stage == ('2A' or '2AB'):
+    if stage in ('2A', '2AB'):
         # Run SimRNA scripts
         is_stage = True
         logging.info('Running SimRNA scripts...')
         simrna_run(current_directory)
 
-    if stage == ('2B' or '2BA'):
+    if stage in ('2B', '2BA'):
         # Organize SimRNA files
         is_stage = True
         logging.info('Organizing SimRNA files...')
         simrna_cleanup(current_directory)
 
-    if stage == ('2B' or '2BB'):
+    if stage in ('2B', '2BB'):
         # Prepare QRNAS scripts
         is_stage = True
         logging.info('Preparing QRNAS scripts...')
         qrnas_prep(current_directory, qrnas_program, qrnas_ff, email)
 
-    if stage == ('2B' or '2BC'):
+    if stage in ('2B', '2BC'):
         # Run QRNAS scripts
         is_stage = True
         logging.info('Running QRNAS scripts...')
         qrnas_run(current_directory)
 
-    if stage == ('2C' or '2CA'):
+    if stage in ('2C', '2CA'):
         # Organize QRNAS files
         is_stage = True
         logging.info('Organizing QRNAS files...')
         qrnas_cleanup(current_directory)
 
-    if stage == ('2C' or '2CB'):
+    if stage in ('2C', '2CB'):
         # Prepare ARES scripts
         is_stage = True
         logging.info('Preparing ARES scripts...')
         ares_prep(current_directory, ares_program, ares_environment, email)
 
-    if stage == ('2C' or '2CC'):
+    if stage in ('2C', '2CC'):
         # Run ARES scripts
         is_stage = True
         logging.info('Running ARES scripts...')
         ares_run()
 
-    if stage == '2D':
+    if stage in ('2D'):
         # Final stage cleanup and fpocket run
         # Separated stage to avoid ARES reading duplicate PDB files in fpocket subdirectories
         is_stage = True
@@ -328,24 +328,23 @@ def main():
         fpocket_cleanup(current_directory)
         fpocket_read(current_directory)
 
-    if stage == ('3A' or '3AA'):
+    if stage in ('3A', '3AA'):
         # Prepare DOCK 6 scripts
         is_stage = True
         logging.info('Preparing DOCK 6 scripts...')
         dock6_prep()
 
-    if stage == ('3A' or '3AB'):
+    if stage in ('3A', '3AB'):
         # Run DOCK 6 scripts
         is_stage = True
         logging.info('Running DOCK 6 scripts...')
         dock6_run(current_directory)
 
-    if stage == '3B':
+    if stage in ('3B'):
         # Run AnnapuRNA
         is_stage = True
         logging.info('Running AnnapuRNA...')
         annapurna_run(current_directory)
-
     if not is_stage:
         logging.error('Incorrect stage specified, use "-stage" to define string (e.g., "1A"). Exiting...')
         sys.exit()
@@ -1544,7 +1543,7 @@ def fpocket_cleanup(working_directory):
     pocket_directory = Path.joinpath(working_directory, 'pockets')
     qrnas_directory = folder_check(working_directory, 'qrnas_models')
     for filepath in qrnas_directory.glob('*\**'):
-        if filepath.name is not 'pockets':
+        if filepath.name != 'pockets':
             try:
                 shutil.move(filepath, Path.joinpath(pocket_directory, filepath.name))
             except:
