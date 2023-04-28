@@ -40,23 +40,23 @@ import sys
 current_directory = Path.cwd()
 
 # Program default locations
-COBRETTI = '/work/LAS/wmoss-lab/scripts/cobretti.py'
-SCANFOLD_1 = '/work/LAS/wmoss-lab/scripts/ScanFold.py'
-SCANFOLD_2 = '/work/LAS/wmoss-lab/scripts/ScanFold2.0-inforna/ScanFoldBothForInforna.py'
-SCANFOLD_2_ENV = '/work/LAS/wmoss-lab/programs/envs/ScanFold2'
-CMBUILDER = '/work/LAS/wmoss-lab/scripts/labtools/cm-builder'
-RSCAPE = '/work/LAS/wmoss-lab/programs/rscape_v2.0.0.k/bin/R-scape'
-R2R = '/work/LAS/wmoss-lab/programs/R2R-1.0.6/src/r2r'
-PERL = '/work/LAS/wmoss-lab/programs/lib/perl5/'
-RNAFRAMEWORK = '/work/LAS/wmoss-lab/programs/RNAFramework/lib/'
-KNOTTY = '/work/LAS/wmoss-lab/programs/knotty/knotty'
-HFOLD = '/work/LAS/wmoss-lab/programs/hfold/HFold_iterative'
-SIMRNA = '/work/LAS/wmoss-lab/programs/SimRNA'
-QRNAS = '/work/LAS/wmoss-lab/programs/qrnas/QRNA'
-QRNAS_FF = '/work/LAS/wmoss-lab/programs/qrnas/forcefield'
-ARES = '/work/LAS/wmoss-lab/programs/ares'
-ARES_ENV = '/work/LAS/wmoss-lab/programs/envs/ares'
-FPOCKET = '/work/LAS/wmoss-lab/programs/fpocket2/bin/fpocket'
+COBRETTI = Path('/work/LAS/wmoss-lab/scripts/cobretti.py')
+SCANFOLD_1 = Path('/work/LAS/wmoss-lab/scripts/ScanFold.py')
+SCANFOLD_2 = Path('/work/LAS/wmoss-lab/scripts/ScanFold2.0-inforna/ScanFoldBothForInforna.py')
+SCANFOLD_2_ENV = Path('/work/LAS/wmoss-lab/programs/envs/ScanFold2')
+CMBUILDER = Path('/work/LAS/wmoss-lab/scripts/labtools/cm-builder')
+RSCAPE = Path('/work/LAS/wmoss-lab/programs/rscape_v2.0.0.k/bin/R-scape')
+R2R = Path('/work/LAS/wmoss-lab/programs/R2R-1.0.6/src/r2r')
+PERL = Path('/work/LAS/wmoss-lab/programs/lib/perl5/')
+RNAFRAMEWORK = Path('/work/LAS/wmoss-lab/programs/RNAFramework/lib/')
+KNOTTY = Path('/work/LAS/wmoss-lab/programs/knotty/knotty')
+HFOLD = Path('/work/LAS/wmoss-lab/programs/hfold/HFold_iterative')
+SIMRNA = Path('/work/LAS/wmoss-lab/programs/SimRNA')
+QRNAS = Path('/work/LAS/wmoss-lab/programs/qrnas/QRNA')
+QRNAS_FF = Path('/work/LAS/wmoss-lab/programs/qrnas/forcefield')
+ARES = Path('/work/LAS/wmoss-lab/programs/ares')
+ARES_ENV = Path('/work/LAS/wmoss-lab/programs/envs/ares')
+FPOCKET = Path('/work/LAS/wmoss-lab/programs/fpocket2/bin/fpocket')
 
 
 def main():
@@ -1302,7 +1302,7 @@ def simrna_prep(working_directory, simrna_directory, email, config_file='None', 
         os.symlink(simrna_data, data_link)
     file_count = 1
     for filepath in working_directory.glob('*.dbn'):
-        dbn_headers = filepath.stem()
+        dbn_headers = Path(filepath).stem
         # Split sequence and structure into separate inputs so SimRNA can read them
         sequence_tempfile = dbn_headers + '.sequence'
         structure_tempfile = dbn_headers + '.structure'
