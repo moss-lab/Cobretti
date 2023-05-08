@@ -36,6 +36,7 @@ import random
 import shutil
 import subprocess
 import sys
+import time
 
 current_directory = Path.cwd()
 
@@ -1544,12 +1545,9 @@ def fpocket_cleanup(working_directory):
     Path.mkdir(Path.joinpath(working_directory, 'pockets'), exist_ok=True)
     pocket_directory = Path.joinpath(working_directory, 'pockets')
     qrnas_directory = folder_check(working_directory, 'qrnas_models')
-    for filepath in qrnas_directory.glob('*\**'):
-        if filepath.name != 'pockets':
-            try:
-                shutil.move(filepath, Path.joinpath(pocket_directory, filepath.name))
-            except:
-                logging.error(f'Unable to move folder: {filepath.name}')
+    for filename in os.listdir(qrnas_directory):  # Move pocket directories to pocket folder
+        if filename.endswith('AA_QRNAS_out'):
+            shutil.move(Path.joinpath(qrnas_directory, filename), Path.joinpath(pocket_directory, filename))
 
 
 def fpocket_read(working_directory):
