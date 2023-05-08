@@ -1458,6 +1458,8 @@ def qrnas_prep(working_directory, qrnas_program, qrnas_ff_directory, email):
     current_size = 0
     max_size = 10
     cluster_directory = folder_check(working_directory, 'cluster_models')
+    qrnas_directory = Path.joinpath(working_directory, 'qrnas_models')
+    Path.mkdir(qrnas_directory, exist_ok=True)
     for filepath in cluster_directory.glob('*_AA.pdb'):
         output_file = filepath.name.replace('.pdb', '_QRNAS.pdb')
         if current_size == 0:
@@ -1476,13 +1478,13 @@ def qrnas_prep(working_directory, qrnas_program, qrnas_ff_directory, email):
             with open(f'qrnas_{count}.sh', 'a', newline='\n') as writefile:
                 writefile.writelines('wait;\n')
                 # Copy files from temporary directory
-                writefile.writelines('cp -r $TMPDIR/qrnas_${SLURM_JOB_ID} %s\n' % working_directory)
+                writefile.writelines('cp -r $TMPDIR/qrnas_${SLURM_JOB_ID} %s\n' % qrnas_directory)
                 count += 1
                 current_size = 0
     with open('qrnas_' + str(count) + '.sh', 'a', newline='\n') as writefile:
         # Close out final shell script, copy files from temporary directory
         writefile.writelines('wait;\n')
-        writefile.writelines('cp -r $TMPDIR/qrnas_${SLURM_JOB_ID} %s\n' % working_directory)
+        writefile.writelines('cp -r $TMPDIR/qrnas_${SLURM_JOB_ID}/. %s\n' % qrnas_directory)
 
 
 def qrnas_run(working_directory):
@@ -1522,7 +1524,7 @@ def ares_prep(working_directory, ares_directory, ares_environment, email):
         writefile.writelines(f'conda activate {ares_environment}\nwait;\n')
         writefile.writelines(f'cd {ares_directory}\n')
         writefile.writelines(
-            f'python -m ares.predict {qrnas_directory} data/epoch=0-step=874.ckpt {working_directory}/ares.csv -f pdb'
+            f'python -m ares.predict {qrnas_directory} data/epoch=0-step=874.ckpt {working_directory}/ares.csv -f pdb '
             f'--nolabels\n')
 
 
