@@ -265,7 +265,7 @@ def main():
         logging.info('Organizing files and running R-Scape...')
         cmbuilder_cleanup(current_directory)
 
-    if stage in ('1C', '1CA'):
+    if stage in ('1CA'):
         # Substage called by R-Scape script to organize remaining files
         is_stage = True
         logging.info('R-Scape complete, organizing results...')
@@ -476,7 +476,7 @@ def blast_prep(sequence_directory, database_directory, email):
     # BLAST search using local databases, output to database directory
     for filepath in sequence_directory.glob('*.fa*'):
         for record in SeqIO.parse(filepath, 'fasta'):
-            name = record.name
+            name = record.name.replace('.', '-').replace('_', '-')
             logging.debug(f'BLAST sequence name: {name}')
             blast_tempfile = f'{name}_db_raw.txt'
             tempfile_location = Path.joinpath(database_directory, blast_tempfile)
@@ -611,7 +611,7 @@ def pk_fold(knotty_program, hfold_program, dbn_readfile='extended.dbn', pk_write
             "Y": ('C', 'U')}
         lines = [line for line in readfile.readlines() if line.strip()]
         for line_index, line in enumerate(lines):
-            if (line_index + 3) >= len(lines):
+            if (line_index + 3) > len(lines):
                 # Stop when there aren't enough lines left to contain a DBN
                 break
             logging.debug(f'First character in line {line_index}: {line[0]}')
@@ -686,6 +686,7 @@ def pk_fold(knotty_program, hfold_program, dbn_readfile='extended.dbn', pk_write
                 logging.debug(f'HFold w/ ScanFold input: {hfold_input}')
                 writefile.flush()
                 hfold = subprocess.run(hfold_input, stdout=writefile, shell=True)
+                writefile.flush()
                 i += 1
             else:
                 i += 1
