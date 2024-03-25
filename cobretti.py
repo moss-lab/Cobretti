@@ -391,6 +391,7 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
             writefile.writelines('module load perl\n')
             writefile.writelines('module load infernal\n')
         elif job.startswith('rscape'):
+            writefile.writelines('module load py-biopython\n')
             writefile.writelines('module load gcc\n')
             writefile.writelines('module load ghostscript\n')
             writefile.writelines('module load gnuplot\n')
