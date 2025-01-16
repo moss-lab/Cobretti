@@ -586,7 +586,7 @@ def dbn_extend(sequence_directory, dbn_filepath, dbn_writefile):
                 three_prime_filler = extension
             # Append results, adding dots to unstructured extensions to maintain proper alignment
             with open(dbn_writefile, 'a+', newline='\n') as writefile:
-                writefile.writelines(f'>{dbn_header}\n')
+                writefile.writelines(f'{dbn_header}\n')
                 writefile.writelines(f'{fasta_sequence[dbn_start:dbn_end]}\n')
                 writefile.writelines(f'{"." * five_prime_filler}{dbn_structure}{"." * three_prime_filler}\n')
 
