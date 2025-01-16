@@ -778,19 +778,19 @@ def pk_breakdown(pk_directory, pk_readfile='pk_clean.txt'):
                     pk_filename = pk_filename[0] + '_error.dbn'
                 elif dbn_header.endswith(' HFold ScanFold'):
                     pk_filename = dbn_header.strip('>').split('_coordinates')
-                    pk_header = '>' + pk_filename[0] + ' HFold ScanFold'
+                    pk_header = dbn_header
                     pk_filename = pk_filename[0] + '_hfold_scanfold.dbn'
                 elif dbn_header.endswith(' Knotty'):
                     pk_filename = dbn_header.strip('>').split('_coordinates')
-                    pk_header = '>' + pk_filename[0] + ' Knotty'
+                    pk_header = dbn_header
                     pk_filename = pk_filename[0] + '_knotty.dbn'
                 elif dbn_header.endswith(' HFold'):
                     pk_filename = dbn_header.strip('>').split('_coordinates')
-                    pk_header = '>' + pk_filename[0] + ' HFold'
+                    pk_header = dbn_header
                     pk_filename = pk_filename[0] + '_hfold.dbn'
                 elif dbn_header.endswith(' ScanFold'):
                     pk_filename = dbn_header.strip('>').split('_coordinates')
-                    pk_header = '>' + pk_filename[0] + ' ScanFold'
+                    pk_header = dbn_header
                     pk_filename = pk_filename[0] + '_scanfold.dbn'
                 pk_sequence = lines[i + 1].rstrip()
                 pk_structure = lines[i + 2].rstrip()
