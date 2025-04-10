@@ -1,0 +1,59 @@
+: /lustre/hdd/LAS/BioDatabase/ncbi/blast-db/latest
+Lmod Warning:
+-------------------------------------------------------------------------------
+The following dependent module(s) are not currently loaded: bzip2/1.0.8-lzwesvn
+(required by: ncbi-rmblastn/2.14.0-py310-vqnew3z), lzo/2.10-bwsmdd6 (required
+by: ncbi-rmblastn/2.14.0-py310-vqnew3z), python/3.10.10-zwlkg4l (required by:
+boost/1.81.0-py310-ipcq5yi), xz/5.4.1-yra4g4l (required by:
+ncbi-rmblastn/2.14.0-py310-vqnew3z), zstd/1.5.4-l2uh2sm (required by:
+ncbi-rmblastn/2.14.0-py310-vqnew3z)
+-------------------------------------------------------------------------------
+
+
+
+
+The following have been reloaded with a version change:
+  1) bzip2/1.0.8-lzwesvn => bzip2/1.0.8-xhz3vd5
+  2) expat/2.5.0-thwe7ro => expat/2.6.2-bxff6pz
+  3) font-util/1.4.0-u5b7y6r => font-util/1.4.0-zkz7yql
+  4) fontconfig/2.13.1-oltetsi => fontconfig/2.13.1-txdjpxw
+  5) freetype/2.11.1-rjf5tey => freetype/2.13.2-koj3sd4
+  6) gdbm/1.23-4fyo4ei => gdbm/1.23-6h24ou6
+  7) gettext/0.21.1-a735ozh => gettext/0.22.4-koftuxm
+  8) kbproto/1.0.7-byuw3zz => kbproto/1.0.7-ylg5cbu
+  9) libbsd/0.11.7-v55zmev => libbsd/0.12.1-zda63xq
+ 10) libffi/3.3-izixbhl => libffi/3.4.6-sbyxvhc
+ 11) libiconv/1.17-m4nfoxw => libiconv/1.17-dba3bla
+ 12) libmd/1.0.4-oknbw4j => libmd/1.0.4-epwugc7
+ 13) libpng/1.6.39-5b5qhj7 => libpng/1.6.39-j4sjt4o
+ 14) libpthread-stubs/0.4-ky45ca6 => libpthread-stubs/0.5-tmlwepo
+ 15) libx11/1.8.4-6ekkrdm => libx11/1.8.10-pgvkg6e
+ 16) libxau/1.0.8-flvt4ah => libxau/1.0.11-4rxwhaj
+ 17) libxcb/1.14-p657ut5 => libxcb/1.17.0-cj7mrd7
+ 18) libxcrypt/4.4.33-nrvcch6 => libxcrypt/4.4.35-zja4526
+ 19) libxdmcp/1.1.4-ckxlsbd => libxdmcp/1.1.4-nzhcdvx
+ 20) libxext/1.3.3-zsefcrn => libxext/1.3.6-ji3afgr
+ 21) libxft/2.3.2-p65q6yc => libxft/2.3.8-4vewm3o
+ 22) libxml2/2.10.3-k7sxdfr => libxml2/2.10.3-t6x3p3p
+ 23) libxrender/0.9.10-qky2ycf => libxrender/0.9.11-2xrqxm5
+ 24) libxscrnsaver/1.2.2-x7bvl7i => libxscrnsaver/1.2.4-xqogmo5
+ 25) lzo/2.10-bwsmdd6 => lzo/2.10-nrykxw6
+ 26) ncurses/6.4-ah6cmec => ncurses/6.4-6o67umv
+ 27) openssl/1.1.1t-ipqfewh => openssl/3.2.1-wohkbfi
+ 28) pigz/2.7-bry6mdx => pigz/2.8-vt5ps6w
+ 29) python/3.10.10-zwlkg4l => python/3.11.9-i2aasxp
+ 30) readline/8.2-hinam4f => readline/8.2-x2jj77v
+ 31) renderproto/0.11.1-5ydmvy6 => renderproto/0.11.1-qvd4ion
+ 32) scrnsaverproto/1.2.2-phbmzth => scrnsaverproto/1.2.2-vb23hmf
+ 33) sqlite/3.40.1-di4mq5z => sqlite/3.43.2-qhkje4l
+ 34) tar/1.34-nzg5e7x => tar/1.34-cxa4vai
+ 35) tcl/8.6.12-zpfpc7q => tcl/8.6.12-q4we4ug
+ 36) tk/8.6.11-z75veng => tk/8.6.11-pgp33f5
+ 37) util-linux-uuid/2.38.1-jgqx5vj => util-linux-uuid/2.38.1-sbo5bsn
+ 38) xextproto/7.3.0-je7vsx3 => xextproto/7.3.0-kqz6mtr
+ 39) xproto/7.0.31-4obciun => xproto/7.0.31-pt2lmmk
+ 40) xtrans/1.3.5-7x65sip => xtrans/1.5.0-ersltm7
+ 41) xz/5.4.1-yra4g4l => xz/5.4.6-ss2bz2e
+ 42) zstd/1.5.4-l2uh2sm => zstd/1.5.6-focyozj
+
+BLAST Database error: No alias or index file found for nucleotide database [nt.01] in search path [/lustre/hdd/LAS/wmoss-lab/ecoppen/benchmarks/cobretti_nova/Cobretti/test::]

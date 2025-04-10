@@ -41,7 +41,7 @@ import time
 current_directory = Path.cwd()
 
 # Program default locations
-COBRETTI = Path('/lustre/hdd/LAS/wmoss-lab/scripts/cobretti.py')
+COBRETTI = Path('/lustre/hdd/LAS/wmoss-lab/ecoppen/benchmarks/cobretti_nova/Cobretti/cobretti.py')
 SCANFOLD_1 = Path('/lustre/hdd/LAS/wmoss-lab/scripts/ScanFold.py')
 SCANFOLD_2 = Path('/lustre/hdd/LAS/wmoss-lab/scripts/ScanFold2.0-inforna/ScanFoldBothForInforna.py')
 SCANFOLD_2_ENV = Path('/lustre/hdd/LAS/wmoss-lab/programs/envs/ScanFold2')
@@ -382,10 +382,10 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
             writefile.writelines('module load py-biopython/1.70-py3-wos466g\n')
             writefile.writelines('module load python/3.6.5-fwk5uaj\n')
         elif job.startswith('blast'):
-            writefile.writelines('module load ncbi-blast-db/latest\n')
+            writefile.writelines('module load ncbi-rmblastn\n')
             writefile.writelines('echo ${NCBI_BLAST_DB_PATH}: /lustre/hdd/LAS/BioDatabase/ncbi/blast-db/latest\n')
             writefile.writelines('module load blast-plus\n')
-            writefile.writelines('export BLASTDB=${NCBI_BLAST_DB_PATH}\n')
+            writefile.writelines('export BLASTDB=/lustre/hdd/LAS/BioDatabase/ncbi/blast-db/latest\n')
         elif job.startswith('cmbuilder'):
             writefile.writelines('module load perl\n')
             writefile.writelines('module load infernal\n')
