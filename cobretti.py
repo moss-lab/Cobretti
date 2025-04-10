@@ -91,7 +91,7 @@ def main():
     parser.add_argument('-sf2', type=str, default=SCANFOLD_2,
                         help='input location of ScanFold2.0.py')
     parser.add_argument('--sf2env', type=str, default=SCANFOLD_2_ENV,
-                        help='input location of ScanFold2.0 conda environment')
+                        help='input location of ScanFold2.0 mamba environment')
     parser.add_argument('-cmb', type=str, default=CMBUILDER,
                         help='input location of cm-builder')
     parser.add_argument('-rs', type=str, default=RSCAPE,
@@ -115,7 +115,7 @@ def main():
     parser.add_argument('-ares', type=str, default=ARES,
                         help='input location of ARES')
     parser.add_argument('-aresenv', type=str, default=ARES_ENV,
-                        help='input location of ARES conda environment')
+                        help='input location of ARES mamba environment')
     parser.add_argument('-fpocket', type=str, default=FPOCKET,
                         help='input location of fpocket')
 
@@ -376,7 +376,7 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
         if job.startswith('scanfold2'):
             writefile.writelines('#SBATCH --export=NONE\n\n')
             writefile.writelines('module purge\n')
-            writefile.writelines('module load miniconda3\n')
+            writefile.writelines('module load micromamba\n')
         elif job.startswith('scanfold1'):
             writefile.writelines('module use /opt/rit/spack-modules/lmod/linux-rhel7-x86_64/Core\n')
             writefile.writelines('module load py-biopython/1.70-py3-wos466g\n')
@@ -399,7 +399,7 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
         elif job.startswith('ares'):
             writefile.writelines('#SBATCH --export=NONE\n\n')
             writefile.writelines('module purge\n')
-            writefile.writelines('module load miniconda3\n')
+            writefile.writelines('module load micromamba\n')
         else:
             writefile.writelines('module load py-biopython\n')
             writefile.writelines('module load python\n')
@@ -438,7 +438,7 @@ def scanfold2_prep(sequence_directory, scanfold2_directory, scanfold2_environmen
             logging.debug(f'ScanFold 2.0 generic filename: {name}')
         shell_build_start(f'scanfold2_{name}.sh', f'scanfold2_{name}', email, mem=10, notify='END,FAIL')
         with open(f'scanfold2_{name}.sh', 'a', newline='\n') as writefile:
-            writefile.writelines(f'conda activate {scanfold2_environment}\n')
+            writefile.writelines(f'micromamba activate {scanfold2_environment}\n')
             writefile.writelines('wait;\n')
             writefile.writelines(f'python {scanfold2_directory} {filepath} --folder_name {name} --global_refold &\n')
             writefile.writelines('wait;\n')
@@ -1523,7 +1523,7 @@ def ares_prep(working_directory, ares_directory, ares_environment, email):
     qrnas_directory = folder_check(working_directory, 'qrnas_models')
     shell_build_start('ares.sh', 'ares', email, nodes=8, mem=10, notify='END,FAIL')
     with open('ares.sh', 'a', newline='\n') as writefile:
-        writefile.writelines(f'conda activate {ares_environment}\nwait;\n')
+        writefile.writelines(f'micromamba activate {ares_environment}\nwait;\n')
         writefile.writelines(f'cd {ares_directory}\n')
         writefile.writelines(
             f'python -m ares.predict {qrnas_directory} data/epoch=0-step=874.ckpt {working_directory}/ares.csv -f pdb '
