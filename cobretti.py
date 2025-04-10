@@ -41,23 +41,23 @@ import time
 current_directory = Path.cwd()
 
 # Program default locations
-COBRETTI = Path('/work/LAS/wmoss-lab/scripts/cobretti.py')
-SCANFOLD_1 = Path('/work/LAS/wmoss-lab/scripts/ScanFold.py')
-SCANFOLD_2 = Path('/work/LAS/wmoss-lab/scripts/ScanFold2.0-inforna/ScanFoldBothForInforna.py')
-SCANFOLD_2_ENV = Path('/work/LAS/wmoss-lab/programs/envs/ScanFold2')
-CMBUILDER = Path('/work/LAS/wmoss-lab/scripts/labtools/cm-builder')
-RSCAPE = Path('/work/LAS/wmoss-lab/programs/rscape_v2.0.0.k/bin/R-scape')
-R2R = Path('/work/LAS/wmoss-lab/programs/R2R-1.0.6/src/r2r')
-PERL = Path('/work/LAS/wmoss-lab/programs/lib/perl5/')
-RNAFRAMEWORK = Path('/work/LAS/wmoss-lab/programs/RNAFramework/lib/')
-KNOTTY = Path('/work/LAS/wmoss-lab/programs/knotty/knotty')
-HFOLD = Path('/work/LAS/wmoss-lab/programs/hfold/HFold_iterative')
-SIMRNA = Path('/work/LAS/wmoss-lab/programs/SimRNA')
-QRNAS = Path('/work/LAS/wmoss-lab/programs/qrnas/QRNA')
-QRNAS_FF = Path('/work/LAS/wmoss-lab/programs/qrnas/forcefield')
-ARES = Path('/work/LAS/wmoss-lab/programs/ares')
-ARES_ENV = Path('/work/LAS/wmoss-lab/programs/envs/ares')
-FPOCKET = Path('/work/LAS/wmoss-lab/programs/fpocket2/bin/fpocket')
+COBRETTI = Path('/lustre/hdd/LAS/wmoss-lab/scripts/cobretti.py')
+SCANFOLD_1 = Path('/lustre/hdd/LAS/wmoss-lab/scripts/ScanFold.py')
+SCANFOLD_2 = Path('/lustre/hdd/LAS/wmoss-lab/scripts/ScanFold2.0-inforna/ScanFoldBothForInforna.py')
+SCANFOLD_2_ENV = Path('/lustre/hdd/LAS/wmoss-lab/programs/envs/ScanFold2')
+CMBUILDER = Path('/lustre/hdd/LAS/wmoss-lab/scripts/labtools/cm-builder')
+RSCAPE = Path('/lustre/hdd/LAS/wmoss-lab/programs/rscape_v2.0.0.k/bin/R-scape')
+R2R = Path('/lustre/hdd/LAS/wmoss-lab/programs/R2R-1.0.6/src/r2r')
+PERL = Path('/lustre/hdd/LAS/wmoss-lab/programs/lib/perl5/')
+RNAFRAMEWORK = Path('/lustre/hdd/LAS/wmoss-lab/programs/RNAFramework/lib/')
+KNOTTY = Path('/lustre/hdd/LAS/wmoss-lab/programs/knotty/knotty')
+HFOLD = Path('/lustre/hdd/LAS/wmoss-lab/programs/hfold/HFold_iterative')
+SIMRNA = Path('/lustre/hdd/LAS/wmoss-lab/programs/SimRNA')
+QRNAS = Path('/lustre/hdd/LAS/wmoss-lab/programs/qrnas/QRNA')
+QRNAS_FF = Path('/lustre/hdd/LAS/wmoss-lab/programs/qrnas/forcefield')
+ARES = Path('/lustre/hdd/LAS/wmoss-lab/programs/ares')
+ARES_ENV = Path('/lustre/hdd/LAS/wmoss-lab/programs/envs/ares')
+FPOCKET = Path('/lustre/hdd/LAS/wmoss-lab/programs/fpocket2/bin/fpocket')
 
 
 def main():
@@ -363,7 +363,6 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
     # Build shell scripts with Pronto/HPC settings and modules
     with open(filename, 'w', newline='\n') as writefile:
         writefile.writelines('#!/bin/bash -l\n')
-        writefile.writelines('#SBATCH --partition=biocrunch\n')  # Partition to submit to
         writefile.writelines(f'#SBATCH --time={time}-00:00:00\n')  # Time limit for this job in days
         writefile.writelines(f'#SBATCH --nodes={nodes}\n')  # Nodes to be used for this job during runtime
         if mem != 0:
@@ -384,7 +383,7 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
             writefile.writelines('module load python/3.6.5-fwk5uaj\n')
         elif job.startswith('blast'):
             writefile.writelines('module load ncbi-blast-db/latest\n')
-            writefile.writelines('echo ${NCBI_BLAST_DB_PATH}: /work/LAS/BioDatabase/ncbi/blast-db/latest\n')
+            writefile.writelines('echo ${NCBI_BLAST_DB_PATH}: /lustre/hdd/LAS/BioDatabase/ncbi/blast-db/latest\n')
             writefile.writelines('module load blast-plus\n')
             writefile.writelines('export BLASTDB=${NCBI_BLAST_DB_PATH}\n')
         elif job.startswith('cmbuilder'):

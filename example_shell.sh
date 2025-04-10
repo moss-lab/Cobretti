@@ -1,5 +1,4 @@
 #!/bin/bash -l
-#SBATCH --partition=biocrunch
 #SBATCH --nodelist=whatever
 #SBATCH --time=1-00:00:00
 #SBATCH --nodes=1
