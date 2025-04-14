@@ -58,7 +58,7 @@ QRNAS_FF = Path('/lustre/hdd/LAS/wmoss-lab/programs/qrnas/forcefield')
 ARES = Path('/lustre/hdd/LAS/wmoss-lab/programs/ares')
 ARES_ENV = Path('/lustre/hdd/LAS/wmoss-lab/programs/envs/ares')
 FPOCKET = Path('/lustre/hdd/LAS/wmoss-lab/programs/fpocket2/bin/fpocket')
-
+RSCAPE_ENV = Path('/lustre/hdd/LAS/wmoss-lab/programs/envs/rscape_nova')
 
 def main():
     parser = argparse.ArgumentParser()
@@ -96,6 +96,8 @@ def main():
                         help='input location of cm-builder')
     parser.add_argument('-rs', type=str, default=RSCAPE,
                         help='input location of R-Scape')
+    parser.add_argument('--rsenv', type=str, default=RSCAPE_ENV,
+                        help='input location of r-scape mamba environment')
     parser.add_argument('-r2r', type=str, default=R2R,
                         help='input location of R2R')
     parser.add_argument('-perl', type=str, default=PERL,
@@ -135,6 +137,7 @@ def main():
     scanfold2_environment = args.sf2env
     cmbuilder_program = args.cmb
     rscape_program = args.rs
+    rscape_environment = args.rsenv
     r2r_program = args.r2r
     perl_program = args.perl
     rnaframework_directory = args.rf
@@ -391,7 +394,7 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
             writefile.writelines('module load infernal\n')
         elif job.startswith('rscape'):
             writefile.writelines('module load micromamba\n')
-            writefile.writelines('micromamba activate /lustre/hdd/LAS/wmoss-lab/programs/envs/rscape_nova\n')
+            writefile.writelines('micromamba activate {rscape_environment} \n')
         elif job.startswith('qrnas'):
             writefile.writelines('module load gcc\n')
         elif job.startswith('ares'):

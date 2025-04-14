@@ -1,3 +1,0 @@
-1a51	.	RNA_sequence_secondary_structure	294	307	.	.	.	motif_1;sequence=GGUACUAAUGAACC;structure=(((.(....).)));refoldedMFE=(((.(....).)));MFE(kcal/mol)=-0.8;z-score=-1.0;ED=1.28
-1a51	.	RNA_sequence_secondary_structure	308	324	.	.	.	motif_2;sequence=GUGAGGCUUAACCUUAC;structure=((((((.....))))));refoldedMFE=((((((.....))))));MFE(kcal/mol)=-5.3;z-score=-3.69;ED=0.12
-1a51	.	RNA_sequence_secondary_structure	327	345	.	.	.	motif_3;sequence=CGCCGAAGAUGUUUUGGCG;structure=(((((((.....)))))));refoldedMFE=(((((((.....)))))));MFE(kcal/mol)=-7.5;z-score=-2.93;ED=0.96

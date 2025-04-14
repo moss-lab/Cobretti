@@ -1,0 +1,112 @@
+flatpak: symbol lookup error: /lib64/libldap.so.2: undefined symbol: EVP_md2, version OPENSSL_3.0.0
+Lmod Warning:
+-------------------------------------------------------------------------------
+The following dependent module(s) are not currently loaded:
+cairo/1.16.0-py311-z3vp34e (required by: librsvg/2.56.2-py311-6cvnsym,
+gtkplus/3.24.41-py311-pjlgdf7), expat/2.6.2-bxff6pz (required by:
+dbus/1.13.6-py311-5hdpb42, mesa/23.2.1-py311-4c5q7ji), freetype/2.13.2-koj3sd4
+(required by: ghostscript/10.0.0-py311-dkdmunu), fribidi/1.0.12-33b5zpb
+(required by: gtkplus/3.24.41-py311-pjlgdf7), gettext/0.22.4-koftuxm (required
+by: at-spi2-core/2.51.91-py311-merf2ni, atk/2.38.0-py311-cqc5h6c,
+gdk-pixbuf/2.42.10-py311-pjsbbbr, gtkplus/3.24.41-py311-pjlgdf7,
+krb5/1.20.1-ank4kyd), glib/2.78.3-py311-p36zoni (required by:
+dbus/1.13.6-py311-5hdpb42, at-spi2-core/2.51.91-py311-merf2ni,
+atk/2.38.0-py311-cqc5h6c, shared-mime-info/1.10-py311-ku66ch6,
+gdk-pixbuf/2.42.10-py311-pjsbbbr, librsvg/2.56.2-py311-6cvnsym,
+gtkplus/3.24.41-py311-pjlgdf7), gobject-introspection/1.78.1-py311-3hyu4ys
+(required by: at-spi2-core/2.51.91-py311-merf2ni, atk/2.38.0-py311-cqc5h6c,
+gdk-pixbuf/2.42.10-py311-pjsbbbr, gtkplus/3.24.41-py311-pjlgdf7),
+harfbuzz/8.3.0-py311-z7qq36p (required by: librsvg/2.56.2-py311-6cvnsym),
+kbproto/1.0.7-ylg5cbu (required by: libxt/1.3.0-rg7yo3v), libbsd/0.12.1-zda63xq
+(required by: libice/1.1.1-nktb3ai), libffi/3.4.6-sbyxvhc (required by:
+atk/2.38.0-py311-cqc5h6c, librsvg/2.56.2-py311-6cvnsym),
+libjpeg-turbo/3.0.0-ucht777 (required by: gdk-pixbuf/2.42.10-py311-pjsbbbr,
+lcms/2.13.1-vq6laiz, ghostscript/10.0.0-py311-dkdmunu), libpng/1.6.39-j4sjt4o
+(required by: gdk-pixbuf/2.42.10-py311-pjsbbbr,
+ghostscript/10.0.0-py311-dkdmunu), libtiff/4.5.1-tx4jcif (required by:
+lcms/2.13.1-vq6laiz, ghostscript/10.0.0-py311-dkdmunu), libx11/1.8.7-b7sjxcs
+(required by: libxfixes/5.0.3-aj6jcra, libxi/1.7.10-tgfvcgn,
+libxtst/1.2.4-g35jdpt, at-spi2-core/2.51.91-py311-merf2ni, libxt/1.3.0-rg7yo3v,
+libxrandr/1.5.4-jut3sdy, xrandr/1.5.2-6umt5l4, mesa/23.2.1-py311-4c5q7ji,
+libepoxy/1.4.3-py311-i6beedo), libxcb/1.16-xqock27 (required by:
+mesa/23.2.1-py311-4c5q7ji, libxkbcommon/1.5.0-py311-scfjiyu),
+libxext/1.3.5-zwmhhxf (required by: libxi/1.7.10-tgfvcgn,
+libxtst/1.2.4-g35jdpt, libxrandr/1.5.4-jut3sdy, mesa/23.2.1-py311-4c5q7ji,
+ghostscript/10.0.0-py311-dkdmunu), libxml2/2.10.3-t6x3p3p (required by:
+shared-mime-info/1.10-py311-ku66ch6, librsvg/2.56.2-py311-6cvnsym,
+libxkbcommon/1.5.0-py311-scfjiyu), libxrender/0.9.11-ckfjm2i (required by:
+libxrandr/1.5.4-jut3sdy, xrandr/1.5.2-6umt5l4), openssl/3.2.1-wohkbfi (required
+by: krb5/1.20.1-ank4kyd), pango/1.50.13-py311-t2ogpeq (required by:
+librsvg/2.56.2-py311-6cvnsym, gtkplus/3.24.41-py311-pjlgdf7),
+renderproto/0.11.1-qvd4ion (required by: libxrandr/1.5.4-jut3sdy),
+util-linux-uuid/2.38.1-sbo5bsn (required by: libsm/1.2.4-uuec5vy),
+xextproto/7.3.0-kqz6mtr (required by: libxfixes/5.0.3-aj6jcra,
+libxi/1.7.10-tgfvcgn, libxtst/1.2.4-g35jdpt, libxrandr/1.5.4-jut3sdy),
+xproto/7.0.31-pt2lmmk (required by: libice/1.1.1-nktb3ai, libsm/1.2.4-uuec5vy,
+libxfixes/5.0.3-aj6jcra, libxi/1.7.10-tgfvcgn, libxt/1.3.0-rg7yo3v,
+xrandr/1.5.2-6umt5l4), xtrans/1.5.0-ersltm7 (required by: libice/1.1.1-nktb3ai,
+libsm/1.2.4-uuec5vy), zlib-ng/2.1.6-nf73pqi (required by:
+gdk-pixbuf/2.42.10-py311-pjsbbbr, mesa/23.2.1-py311-4c5q7ji,
+lcms/2.13.1-vq6laiz, ghostscript/10.0.0-py311-dkdmunu)
+-------------------------------------------------------------------------------
+
+
+
+Lmod Warning:
+-------------------------------------------------------------------------------
+The following dependent module(s) are not currently loaded:
+cairo/1.16.0-py311-z3vp34e (required by: librsvg/2.56.2-py311-6cvnsym,
+gtkplus/3.24.41-py311-pjlgdf7), expat/2.6.2-bxff6pz (required by:
+dbus/1.13.6-py311-5hdpb42, mesa/23.2.1-py311-4c5q7ji), freetype/2.13.2-koj3sd4
+(required by: ghostscript/10.0.0-py311-dkdmunu), fribidi/1.0.12-33b5zpb
+(required by: gtkplus/3.24.41-py311-pjlgdf7), gettext/0.22.4-koftuxm (required
+by: at-spi2-core/2.51.91-py311-merf2ni, atk/2.38.0-py311-cqc5h6c,
+gdk-pixbuf/2.42.10-py311-pjsbbbr, gtkplus/3.24.41-py311-pjlgdf7,
+krb5/1.20.1-ank4kyd), glib/2.78.3-py311-p36zoni (required by:
+dbus/1.13.6-py311-5hdpb42, at-spi2-core/2.51.91-py311-merf2ni,
+atk/2.38.0-py311-cqc5h6c, shared-mime-info/1.10-py311-ku66ch6,
+gdk-pixbuf/2.42.10-py311-pjsbbbr, librsvg/2.56.2-py311-6cvnsym,
+gtkplus/3.24.41-py311-pjlgdf7), gobject-introspection/1.78.1-py311-3hyu4ys
+(required by: at-spi2-core/2.51.91-py311-merf2ni, atk/2.38.0-py311-cqc5h6c,
+gdk-pixbuf/2.42.10-py311-pjsbbbr, gtkplus/3.24.41-py311-pjlgdf7),
+harfbuzz/8.3.0-py311-z7qq36p (required by: librsvg/2.56.2-py311-6cvnsym),
+kbproto/1.0.7-ylg5cbu (required by: libxt/1.3.0-rg7yo3v), libbsd/0.12.1-zda63xq
+(required by: libice/1.1.1-nktb3ai), libffi/3.4.6-sbyxvhc (required by:
+atk/2.38.0-py311-cqc5h6c, librsvg/2.56.2-py311-6cvnsym),
+libjpeg-turbo/3.0.0-ucht777 (required by: gdk-pixbuf/2.42.10-py311-pjsbbbr,
+lcms/2.13.1-vq6laiz, ghostscript/10.0.0-py311-dkdmunu), libpng/1.6.39-j4sjt4o
+(required by: gdk-pixbuf/2.42.10-py311-pjsbbbr,
+ghostscript/10.0.0-py311-dkdmunu), libtiff/4.5.1-tx4jcif (required by:
+lcms/2.13.1-vq6laiz, ghostscript/10.0.0-py311-dkdmunu), libx11/1.8.7-b7sjxcs
+(required by: libxfixes/5.0.3-aj6jcra, libxi/1.7.10-tgfvcgn,
+libxtst/1.2.4-g35jdpt, at-spi2-core/2.51.91-py311-merf2ni, libxt/1.3.0-rg7yo3v,
+libxrandr/1.5.4-jut3sdy, xrandr/1.5.2-6umt5l4, mesa/23.2.1-py311-4c5q7ji,
+libepoxy/1.4.3-py311-i6beedo), libxcb/1.16-xqock27 (required by:
+mesa/23.2.1-py311-4c5q7ji, libxkbcommon/1.5.0-py311-scfjiyu),
+libxext/1.3.5-zwmhhxf (required by: libxi/1.7.10-tgfvcgn,
+libxtst/1.2.4-g35jdpt, libxrandr/1.5.4-jut3sdy, mesa/23.2.1-py311-4c5q7ji,
+ghostscript/10.0.0-py311-dkdmunu), libxml2/2.10.3-t6x3p3p (required by:
+shared-mime-info/1.10-py311-ku66ch6, librsvg/2.56.2-py311-6cvnsym,
+libxkbcommon/1.5.0-py311-scfjiyu), libxrender/0.9.11-ckfjm2i (required by:
+libxrandr/1.5.4-jut3sdy, xrandr/1.5.2-6umt5l4), openssl/3.2.1-wohkbfi (required
+by: krb5/1.20.1-ank4kyd), pango/1.50.13-py311-t2ogpeq (required by:
+librsvg/2.56.2-py311-6cvnsym, gtkplus/3.24.41-py311-pjlgdf7),
+renderproto/0.11.1-qvd4ion (required by: libxrandr/1.5.4-jut3sdy),
+util-linux-uuid/2.38.1-sbo5bsn (required by: libsm/1.2.4-uuec5vy),
+xextproto/7.3.0-kqz6mtr (required by: libxfixes/5.0.3-aj6jcra,
+libxi/1.7.10-tgfvcgn, libxtst/1.2.4-g35jdpt, libxrandr/1.5.4-jut3sdy),
+xproto/7.0.31-pt2lmmk (required by: libice/1.1.1-nktb3ai, libsm/1.2.4-uuec5vy,
+libxfixes/5.0.3-aj6jcra, libxi/1.7.10-tgfvcgn, libxt/1.3.0-rg7yo3v,
+xrandr/1.5.2-6umt5l4), xtrans/1.5.0-ersltm7 (required by: libice/1.1.1-nktb3ai,
+libsm/1.2.4-uuec5vy), zlib-ng/2.1.6-nf73pqi (required by:
+gdk-pixbuf/2.42.10-py311-pjsbbbr, mesa/23.2.1-py311-4c5q7ji,
+lcms/2.13.1-vq6laiz, ghostscript/10.0.0-py311-dkdmunu)
+-------------------------------------------------------------------------------
+
+
+
+2025-04-14 15:21:05,636 INFO 1212049: Cobretti stage 1B run in progress...
+2025-04-14 15:21:05,636 INFO 1212049: Preparing files for PK/cm-builder...
+2025-04-14 15:21:05,638 INFO 1212049: Optimizing BLAST databases...
+2025-04-14 15:21:06,991 INFO 1212049: Extending motifs...
+2025-04-14 15:21:07,186 INFO 1212049: Checking for pseudoknots...
