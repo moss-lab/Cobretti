@@ -390,10 +390,8 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
             writefile.writelines('module load perl\n')
             writefile.writelines('module load infernal\n')
         elif job.startswith('rscape'):
-            writefile.writelines('module load py-biopython\n')
-            writefile.writelines('module load gcc\n')
-            writefile.writelines('module load ghostscript\n')
-            writefile.writelines('module load gnuplot\n')
+            writefile.writelines('module load micromamba\n')
+            writefile.writelines('micromamba activate /lustre/hdd/LAS/wmoss-lab/programs/envs/rscape_nova\n')
         elif job.startswith('qrnas'):
             writefile.writelines('module load gcc\n')
         elif job.startswith('ares'):
@@ -440,7 +438,7 @@ def scanfold2_prep(sequence_directory, scanfold2_directory, scanfold2_environmen
         with open(f'scanfold2_{name}.sh', 'a', newline='\n') as writefile:
             writefile.writelines(f'micromamba activate {scanfold2_environment}\n')
             writefile.writelines('wait;\n')
-            writefile.writelines(f'python {scanfold2_directory} {filepath} --folder_name {name} --global_refold &\n')
+            writefile.writelines(f'python {scanfold2_directory} {filepath} --folder_name {name} &\n')
             writefile.writelines('wait;\n')
 
 
