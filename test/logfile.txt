@@ -1,2 +1,0 @@
-[Mon Apr 14 15:21:37 2025] Info: Starting Program
-[Mon Apr 14 15:21:38 2025] Info: Ending Program

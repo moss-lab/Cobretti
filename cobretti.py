@@ -394,7 +394,7 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
             writefile.writelines('module load infernal\n')
         elif job.startswith('rscape'):
             writefile.writelines('module load micromamba\n')
-            writefile.writelines('micromamba activate {rscape_environment} \n')
+            writefile.writelines(f'micromamba activate {rscape_environment} \n')
         elif job.startswith('qrnas'):
             writefile.writelines('module load gcc\n')
         elif job.startswith('ares'):
