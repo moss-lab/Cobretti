@@ -441,7 +441,7 @@ def scanfold2_prep(sequence_directory, scanfold2_directory, scanfold2_environmen
         with open(f'scanfold2_{name}.sh', 'a', newline='\n') as writefile:
             writefile.writelines(f'micromamba activate {scanfold2_environment}\n')
             writefile.writelines('wait;\n')
-            writefile.writelines(f'python {scanfold2_directory} {filepath} --folder_name {name} &\n')
+            writefile.writelines(f'python {scanfold2_directory} {filepath} --folder_name {name} --global_refold &\n')
             writefile.writelines('wait;\n')
 
 
