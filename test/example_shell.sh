@@ -9,4 +9,4 @@
 module load py-biopython
 module load python
 
-python ../cobretti.py -stage 1A -email ecoppen@iastate.edu
+python ../cobretti.py -stage 1BC -email ecoppen@iastate.edu

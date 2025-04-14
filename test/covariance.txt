@@ -1,0 +1,1 @@
+Name	BPs	avg_substitutions	expected BPs	STD_DEV	Observed BPs	# of BP power 0-0.1	# of BP power 0.1-0.25	# of BP power >=0.25	0-0.1 BP info	0.1-0.25 BP info	>=0.25 BP info

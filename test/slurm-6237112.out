@@ -1,0 +1,955 @@
+flatpak: symbol lookup error: /lib64/libldap.so.2: undefined symbol: EVP_md2, version OPENSSL_3.0.0
+
+[!] Warning [Data::IO::Sequence->new()]:
+    Unable to guess file format. Falling back to generic text file.
+    -> Caught at /lustre/hdd/LAS/wmoss-lab/programs/RNAFramework/lib/Core/Base.pm line 117.
+Can't locate object method "new" via package "Data::IO::Sequence::" (perhaps you forgot to load "Data::IO::Sequence::"?) at /lustre/hdd/LAS/wmoss-lab/programs/RNAFramework/lib/Data/IO/Sequence.pm line 56.
+
+[!] Warning [Data::IO::Sequence->new()]:
+    Unable to guess file format. Falling back to generic text file.
+    -> Caught at /lustre/hdd/LAS/wmoss-lab/programs/RNAFramework/lib/Core/Base.pm line 117.
+Can't locate object method "new" via package "Data::IO::Sequence::" (perhaps you forgot to load "Data::IO::Sequence::"?) at /lustre/hdd/LAS/wmoss-lab/programs/RNAFramework/lib/Data/IO/Sequence.pm line 56.
+
+[+] Importing sequence database...
+[+] Importing sequence database...
+[+] Importing sequence database... 2500 imported.
+[+] Generating initial Stockholm motif file... 2500 imported.
+[+] Generating initial Stockholm motif file...
+[+] Looking for motif position in sequence... found at 325-343.
+[+] Building covariance model (iteration 1)...
+    Output from cmbuild:
+
+ 2500 imported.
+[+] Generating initial Stockholm motif file...
+[+] Looking for motif position in sequence... found at 273-327.
+[+] Building covariance model (iteration 1)...
+    Output from cmbuild:
+
+
+[+] Looking for motif position in sequence... found at 334-371.
+[+] Building covariance model (iteration 1)...
+    Output from cmbuild:
+
+    # cmbuild :: covariance model construction from multiple sequence alignments
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                            ./tmp2/1a51_motif_2Knotty2.cm
+    # alignment file:                                     ./tmp2/1a51_motif_2Knotty2.stockholm
+    # overwrite CM file if necessary:                     yes
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                      rel entropy
+    #                                                                      -----------
+    # idx    name                     nseq eff_nseq   alen  clen  bps bifs    CM   HMM description
+    # ------ -------------------- -------- -------- ------ ----- ---- ---- ----- ----- -----------
+           1 1a51_motif_2Knotty2         1     1.00     19    19    7    0 0.758 0.433 
+    #
+    # CPU time: 0.02u 0.00s 00:00:00.02 Elapsed: 00:00:00.03
+    # cmbuild :: covariance model construction from multiple sequence alignments
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                            ./tmp2/1a51_motif_1Knotty2.cm
+    # alignment file:                                     ./tmp2/1a51_motif_1Knotty2.stockholm
+    # overwrite CM file if necessary:                     yes
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                      rel entropy
+    #                                                                      -----------
+    # idx    name                     nseq eff_nseq   alen  clen  bps bifs    CM   HMM description
+    # ------ -------------------- -------- -------- ------ ----- ---- ---- ----- ----- -----------
+           1 1a51_motif_1Knotty2         1     1.00     55    55   14    0 0.705 0.481 
+    #
+    # CPU time: 0.06u 0.00s 00:00:00.06 Elapsed: 00:00:00.06
+
+[+] Calibrating covariance model (estimated time: 00 h and 00 min)...
+    Output from cmcalibrate:
+
+
+[+] Calibrating covariance model (estimated time: 00 h and 02 min)...
+    Output from cmcalibrate:
+
+    # cmbuild :: covariance model construction from multiple sequence alignments
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                            ./tmp2/1a51_motif_3Knotty2.cm
+    # alignment file:                                     ./tmp2/1a51_motif_3Knotty2.stockholm
+    # overwrite CM file if necessary:                     yes
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                      rel entropy
+    #                                                                      -----------
+    # idx    name                     nseq eff_nseq   alen  clen  bps bifs    CM   HMM description
+    # ------ -------------------- -------- -------- ------ ----- ---- ---- ----- ----- -----------
+           1 1a51_motif_3Knotty2         1     1.00     38    38    3    0 0.586 0.510 
+    #
+    # CPU time: 0.04u 0.00s 00:00:00.04 Elapsed: 00:00:01.25
+
+[+] Calibrating covariance model (estimated time: 00 h and 00 min)...
+    Output from cmcalibrate:
+
+    # cmcalibrate :: fit exponential tails for CM E-values
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_2Knotty2.cm
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #
+    # Calibrating CM(s):
+    #
+    #                        predicted                                                   actual   
+    #                       running time              percent complete                running time
+    # model name            (hr:min:sec)  [........25........50........75..........]  (hr:min:sec)
+    # --------------------  ------------  ------------------------------------------  ------------
+      1a51_motif_2Knotty2       00:00:43  [========================================]      00:00:34
+    #
+    # Calibration summary statistics:
+    #
+    #                           exponential tail fit mu        exponential tail fit lambda         total number of hits      
+    #                       -------------------------------  -------------------------------  -------------------------------
+    # model name            glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins
+    # --------------------  ------- ------- ------- -------  ------- ------- ------- -------  ------- ------- ------- -------
+      1a51_motif_2Knotty2      7.88    8.07    6.26    7.01    0.639   0.652   0.652   0.716   301060  267344  414713  353262
+    #
+    # CPU time: 135.11u 0.14s 00:02:15.25 Elapsed: 00:00:34.40
+    [ok]
+
+[+] Searching DB with covariance model... 2499 matches found.
+[+] Removing duplicate sequences... 8 matches left.
+[+] Writing matches to FASTA file
+[+] Aligning matches to covariance model...
+    Output from cmalign:
+
+    # cmalign :: align sequences to a CM
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_2Knotty2.cm
+    # sequence file:                               ./tmp2/1a51_motif_2Knotty2.fasta
+    # CM name:                                     1a51_motif_2Knotty2
+    # saving alignment to file:                    ./tmp2/1a51_motif_2Knotty2.stockholm
+    # posterior probability annotation:            off
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                          running time (s)                 
+    #                                                                   -------------------------------          
+    # idx  seq name  length  cm from    cm to  trunc    bit sc  avg pp  band calc  alignment      total  mem (Mb)
+    # ---  --------  ------  -------  -------  -----  --------  ------  ---------  ---------  ---------  --------
+        1  CP088566      19        1       19     no     19.85       -       0.00       0.00       0.00      0.04
+        2  CP027361      19        1       19     no     17.09       -       0.00       0.00       0.00      0.04
+        3  AM946981      19        1       19     no     16.80       -       0.00       0.00       0.00      0.04
+        4  CP035350      19        1       19     no     18.47       -       0.00       0.00       0.00      0.04
+        5  LM996755      19        1       19     no     17.32       -       0.00       0.00       0.00      0.04
+        6  CP035322      19        1       19     no     16.95       -       0.00       0.00       0.00      0.04
+        7  CP010148      18        1       19     no     11.35       -       0.00       0.00       0.00      0.05
+        8  LC056568      19        1       19     no     18.33       -       0.00       0.00       0.00      0.04
+    #
+    # CPU time: 0.02u 0.01s 00:00:00.03 Elapsed: 00:00:00.02
+
+[+] Building covariance model (iteration 2)...
+    Output from cmbuild:
+
+    # cmbuild :: covariance model construction from multiple sequence alignments
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                            ./tmp2/1a51_motif_2Knotty2.cm
+    # alignment file:                                     ./tmp2/1a51_motif_2Knotty2.stockholm
+    # overwrite CM file if necessary:                     yes
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                      rel entropy
+    #                                                                      -----------
+    # idx    name                     nseq eff_nseq   alen  clen  bps bifs    CM   HMM description
+    # ------ -------------------- -------- -------- ------ ----- ---- ---- ----- ----- -----------
+           1 1a51_motif_2Knotty2         8     8.00     19    19    7    0 1.652 1.573 
+    #
+    # CPU time: 0.03u 0.00s 00:00:00.03 Elapsed: 00:00:00.03
+
+[+] Calibrating covariance model (estimated time: 00 h and 00 min)...
+    Output from cmcalibrate:
+
+    # cmcalibrate :: fit exponential tails for CM E-values
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_2Knotty2.cm
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #
+    # Calibrating CM(s):
+    #
+    #                        predicted                                                   actual   
+    #                       running time              percent complete                running time
+    # model name            (hr:min:sec)  [........25........50........75..........]  (hr:min:sec)
+    # --------------------  ------------  ------------------------------------------  ------------
+      1a51_motif_2Knotty2       00:00:43  [========================================]      00:00:43
+    #
+    # Calibration summary statistics:
+    #
+    #                           exponential tail fit mu        exponential tail fit lambda         total number of hits      
+    #                       -------------------------------  -------------------------------  -------------------------------
+    # model name            glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins
+    # --------------------  ------- ------- ------- -------  ------- ------- ------- -------  ------- ------- ------- -------
+      1a51_motif_2Knotty2      2.15    2.75    4.64    5.07    0.571   0.567   0.454   0.467   729695  672945  816791  765248
+    #
+    # CPU time: 171.17u 0.17s 00:02:51.33 Elapsed: 00:00:43.58
+    [ok]
+
+[+] Searching DB with covariance model... 2500 matches found.
+[+] Removing duplicate sequences... 9 matches left.
+[+] Writing matches to FASTA file
+[+] Aligning matches to covariance model...
+    Output from cmalign:
+
+    # cmalign :: align sequences to a CM
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_2Knotty2.cm
+    # sequence file:                               ./tmp2/1a51_motif_2Knotty2.fasta
+    # CM name:                                     1a51_motif_2Knotty2
+    # saving alignment to file:                    ./tmp2/1a51_motif_2Knotty2.stockholm
+    # posterior probability annotation:            off
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                          running time (s)                 
+    #                                                                   -------------------------------          
+    # idx  seq name  length  cm from    cm to  trunc    bit sc  avg pp  band calc  alignment      total  mem (Mb)
+    # ---  --------  ------  -------  -------  -----  --------  ------  ---------  ---------  ---------  --------
+        1  CP057126      19        1       19     no     27.36       -       0.00       0.00       0.00      0.03
+        2  CP057188      19        1       19     no     27.04       -       0.00       0.00       0.00      0.03
+        3  CP054940      19        1       19     no     27.06       -       0.00       0.00       0.00      0.03
+        4  LM996268      18        1       19     no     13.94       -       0.00       0.00       0.00      0.04
+        5  LC056198      19        1       19     no     27.21       -       0.00       0.00       0.00      0.03
+        6  LM996841      19        1       19     no     27.01       -       0.00       0.00       0.00      0.03
+        7  LC056568      19        1       19     no     27.20       -       0.00       0.00       0.00      0.03
+        8  CP035325      19        1       19     no     27.05       -       0.00       0.00       0.00      0.03
+        9  CP010148      18        1       19     no     23.70       -       0.00       0.00       0.00      0.03
+    #
+    # CPU time: 0.01u 0.01s 00:00:00.02 Elapsed: 00:00:00.02
+
+[+] Building covariance model (iteration 3)...
+    Output from cmbuild:
+
+    # cmbuild :: covariance model construction from multiple sequence alignments
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                            ./tmp2/1a51_motif_2Knotty2.cm
+    # alignment file:                                     ./tmp2/1a51_motif_2Knotty2.stockholm
+    # overwrite CM file if necessary:                     yes
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                      rel entropy
+    #                                                                      -----------
+    # idx    name                     nseq eff_nseq   alen  clen  bps bifs    CM   HMM description
+    # ------ -------------------- -------- -------- ------ ----- ---- ---- ----- ----- -----------
+           1 1a51_motif_2Knotty2         9     9.00     19    19    7    0 1.676 1.593 
+    #
+    # CPU time: 0.02u 0.00s 00:00:00.02 Elapsed: 00:00:00.03
+
+[+] Calibrating covariance model (estimated time: 00 h and 00 min)...
+    Output from cmcalibrate:
+
+    # cmcalibrate :: fit exponential tails for CM E-values
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_3Knotty2.cm
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #
+    # Calibrating CM(s):
+    #
+    #                        predicted                                                   actual   
+    #                       running time              percent complete                running time
+    # model name            (hr:min:sec)  [........25........50........75..........]  (hr:min:sec)
+    # --------------------  ------------  ------------------------------------------  ------------
+      1a51_motif_3Knotty2       00:01:32  [========================================]      00:01:27
+    #
+    # Calibration summary statistics:
+    #
+    #                           exponential tail fit mu        exponential tail fit lambda         total number of hits      
+    #                       -------------------------------  -------------------------------  -------------------------------
+    # model name            glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins
+    # --------------------  ------- ------- ------- -------  ------- ------- ------- -------  ------- ------- ------- -------
+      1a51_motif_3Knotty2      6.49    7.75    4.61    6.39    0.512   0.595   0.546   0.625   140405  114310  296399  235140
+    #
+    # CPU time: 345.25u 1.16s 00:05:46.41 Elapsed: 00:01:27.98
+    [ok]
+
+[+] Searching DB with covariance model... 2500 matches found.
+[+] Removing duplicate sequences... 14 matches left.
+[+] Writing matches to FASTA file
+[+] Aligning matches to covariance model...
+    Output from cmalign:
+
+    # cmalign :: align sequences to a CM
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_3Knotty2.cm
+    # sequence file:                               ./tmp2/1a51_motif_3Knotty2.fasta
+    # CM name:                                     1a51_motif_3Knotty2
+    # saving alignment to file:                    ./tmp2/1a51_motif_3Knotty2.stockholm
+    # posterior probability annotation:            off
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                          running time (s)                 
+    #                                                                   -------------------------------          
+    # idx  seq name  length  cm from    cm to  trunc    bit sc  avg pp  band calc  alignment      total  mem (Mb)
+    # ---  --------  ------  -------  -------  -----  --------  ------  ---------  ---------  ---------  --------
+        1  AP024687      38        1       38     no     40.55       -       0.00       0.00       0.00      0.08
+        2  CP092252      38        1       38     no     42.67       -       0.00       0.00       0.00      0.08
+        3  OU342919      39        1       38     no     36.19       -       0.00       0.00       0.00      0.09
+        4  CP038380      38        1       38     no     39.91       -       0.00       0.00       0.00      0.08
+        5  CP068820      39        1       38     no     35.66       -       0.00       0.00       0.00      0.09
+        6  CP061337      39        1       38     no     35.01       -       0.00       0.00       0.00      0.09
+        7  CP031355      38        1       38     no     40.99       -       0.00       0.00       0.00      0.08
+        8  LM995479      39        1       38     no     34.85       -       0.00       0.00       0.00      0.09
+        9  LR134247      38        1       38     no     40.52       -       0.00       0.00       0.00      0.08
+       10  CP046416      38        1       38     no     39.91       -       0.00       0.00       0.00      0.08
+       11  CP057262      38        1       38     no     39.87       -       0.00       0.00       0.00      0.09
+       12  LM996268      38        1       38     no     32.03       -       0.00       0.00       0.00      0.09
+       13  LM996456      39        1       38     no     31.04       -       0.00       0.00       0.00      0.09
+       14  CP010163      38        1       38     no     40.52       -       0.00       0.00       0.00      0.08
+    #
+    # CPU time: 0.03u 0.02s 00:00:00.05 Elapsed: 00:00:00.02
+
+[+] Building covariance model (iteration 2)...
+    Output from cmbuild:
+
+    # cmbuild :: covariance model construction from multiple sequence alignments
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                            ./tmp2/1a51_motif_3Knotty2.cm
+    # alignment file:                                     ./tmp2/1a51_motif_3Knotty2.stockholm
+    # overwrite CM file if necessary:                     yes
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                      rel entropy
+    #                                                                      -----------
+    # idx    name                     nseq eff_nseq   alen  clen  bps bifs    CM   HMM description
+    # ------ -------------------- -------- -------- ------ ----- ---- ---- ----- ----- -----------
+           1 1a51_motif_3Knotty2        14     5.55     42    38    3    0 1.435 1.409 
+    #
+    # CPU time: 0.08u 0.00s 00:00:00.08 Elapsed: 00:00:00.09
+
+[+] Calibrating covariance model (estimated time: 00 h and 00 min)...
+    Output from cmcalibrate:
+
+    # cmcalibrate :: fit exponential tails for CM E-values
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_2Knotty2.cm
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #
+    # Calibrating CM(s):
+    #
+    #                        predicted                                                   actual   
+    #                       running time              percent complete                running time
+    # model name            (hr:min:sec)  [........25........50........75..........]  (hr:min:sec)
+    # --------------------  ------------  ------------------------------------------  ------------
+      1a51_motif_2Knotty2       00:00:00  [========================================]      00:00:39
+    #
+    # Calibration summary statistics:
+    #
+    #                           exponential tail fit mu        exponential tail fit lambda         total number of hits      
+    #                       -------------------------------  -------------------------------  -------------------------------
+    # model name            glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins
+    # --------------------  ------- ------- ------- -------  ------- ------- ------- -------  ------- ------- ------- -------
+      1a51_motif_2Knotty2      2.41    2.99    4.55    5.21    0.535   0.517   0.439   0.496   742347  687156  822904  776243
+    #
+    # CPU time: 154.44u 0.17s 00:02:34.60 Elapsed: 00:00:39.36
+    [ok]
+
+[+] Searching DB with covariance model... 2500 matches found.
+[+] Removing duplicate sequences... 9 matches left.
+[+] Writing matches to FASTA file
+[+] Aligning matches to covariance model...
+    Output from cmalign:
+
+    # cmalign :: align sequences to a CM
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_2Knotty2.cm
+    # sequence file:                               ./tmp2/1a51_motif_2Knotty2.fasta
+    # CM name:                                     1a51_motif_2Knotty2
+    # saving alignment to file:                    ./tmp2/1a51_motif_2Knotty2.stockholm
+    # posterior probability annotation:            off
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                          running time (s)                 
+    #                                                                   -------------------------------          
+    # idx  seq name  length  cm from    cm to  trunc    bit sc  avg pp  band calc  alignment      total  mem (Mb)
+    # ---  --------  ------  -------  -------  -----  --------  ------  ---------  ---------  ---------  --------
+        1  CP068824      19        1       19     no     27.30       -       0.00       0.00       0.00      0.03
+        2  LM996318      19        1       19     no     26.99       -       0.00       0.00       0.00      0.03
+        3  LM996268      18        1       19     no     20.36       -       0.00       0.00       0.00      0.03
+        4  CP053851      19        1       19     no     27.35       -       0.00       0.00       0.00      0.03
+        5  LC056198      19        1       19     no     27.14       -       0.00       0.00       0.00      0.03
+        6  LM996841      19        1       19     no     26.98       -       0.00       0.00       0.00      0.03
+        7  LC056568      19        1       19     no     27.32       -       0.00       0.00       0.00      0.03
+        8  CP035325      19        1       19     no     27.17       -       0.00       0.00       0.00      0.03
+        9  CP010148      18        1       19     no     23.59       -       0.00       0.00       0.00      0.03
+    #
+    # CPU time: 0.02u 0.01s 00:00:00.03 Elapsed: 00:00:00.02
+
+[+] Building final covariance model...
+    Output from cmbuild:
+
+    # cmbuild :: covariance model construction from multiple sequence alignments
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                            ./1a51_motif_2Knotty2.cm
+    # alignment file:                                     ./tmp2/1a51_motif_2Knotty2.stockholm
+    # overwrite CM file if necessary:                     yes
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                      rel entropy
+    #                                                                      -----------
+    # idx    name                     nseq eff_nseq   alen  clen  bps bifs    CM   HMM description
+    # ------ -------------------- -------- -------- ------ ----- ---- ---- ----- ----- -----------
+           1 1a51_motif_2Knotty2         9     9.00     19    19    7    0 1.676 1.593 
+    #
+    # CPU time: 0.03u 0.00s 00:00:00.03 Elapsed: 00:00:00.03
+
+[+] Calibrating final covariance model (may take a while)...
+    Output from cmcalibrate:
+
+    # cmcalibrate :: fit exponential tails for CM E-values
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_1Knotty2.cm
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #
+    # Calibrating CM(s):
+    #
+    #                        predicted                                                   actual   
+    #                       running time              percent complete                running time
+    # model name            (hr:min:sec)  [........25........50........75..........]  (hr:min:sec)
+    # --------------------  ------------  ------------------------------------------  ------------
+      1a51_motif_1Knotty2       00:02:25  [========================================]      00:02:28
+    #
+    # Calibration summary statistics:
+    #
+    #                           exponential tail fit mu        exponential tail fit lambda         total number of hits      
+    #                       -------------------------------  -------------------------------  -------------------------------
+    # model name            glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins
+    # --------------------  ------- ------- ------- -------  ------- ------- ------- -------  ------- ------- ------- -------
+      1a51_motif_1Knotty2      2.31    4.44    3.66    5.39    0.505   0.555   0.670   0.683   115748   88047  332241  252791
+    #
+    # CPU time: 584.38u 1.52s 00:09:45.90 Elapsed: 00:02:28.10
+    [ok]
+
+[+] Searching DB with covariance model... 2500 matches found.
+[+] Removing duplicate sequences... 6 matches left.
+[+] Writing matches to FASTA file
+[+] Aligning matches to covariance model...
+    Output from cmalign:
+
+    # cmalign :: align sequences to a CM
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_1Knotty2.cm
+    # sequence file:                               ./tmp2/1a51_motif_1Knotty2.fasta
+    # CM name:                                     1a51_motif_1Knotty2
+    # saving alignment to file:                    ./tmp2/1a51_motif_1Knotty2.stockholm
+    # posterior probability annotation:            off
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                          running time (s)                 
+    #                                                                   -------------------------------          
+    # idx  seq name  length  cm from    cm to  trunc    bit sc  avg pp  band calc  alignment      total  mem (Mb)
+    # ---  --------  ------  -------  -------  -----  --------  ------  ---------  ---------  ---------  --------
+        1  CP050199      55        1       55     no     67.84       -       0.00       0.00       0.00      0.12
+        2  LM997063      55        1       55     no     64.40       -       0.00       0.00       0.00      0.12
+        3  CP057995      55        1       55     no     64.82       -       0.00       0.00       0.00      0.12
+        4  CP083869      55        1       55     no     66.16       -       0.00       0.00       0.00      0.12
+        5  CP057171      55        1       55     no     65.69       -       0.00       0.00       0.00      0.12
+        6  LM996347      55        1       55     no     66.86       -       0.00       0.00       0.00      0.12
+    #
+    # CPU time: 0.03u 0.01s 00:00:00.04 Elapsed: 00:00:00.05
+
+[+] Building covariance model (iteration 2)...
+    Output from cmbuild:
+
+    # cmbuild :: covariance model construction from multiple sequence alignments
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                            ./tmp2/1a51_motif_1Knotty2.cm
+    # alignment file:                                     ./tmp2/1a51_motif_1Knotty2.stockholm
+    # overwrite CM file if necessary:                     yes
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                      rel entropy
+    #                                                                      -----------
+    # idx    name                     nseq eff_nseq   alen  clen  bps bifs    CM   HMM description
+    # ------ -------------------- -------- -------- ------ ----- ---- ---- ----- ----- -----------
+           1 1a51_motif_1Knotty2         6     1.91     55    55   14    0 1.010 0.830 
+    #
+    # CPU time: 0.08u 0.00s 00:00:00.08 Elapsed: 00:00:00.08
+
+[+] Calibrating covariance model (estimated time: 00 h and 02 min)...
+    Output from cmcalibrate:
+
+    # cmcalibrate :: fit exponential tails for CM E-values
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./1a51_motif_2Knotty2.cm
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #
+    # Calibrating CM(s):
+    #
+    #                        predicted                                                   actual   
+    #                       running time              percent complete                running time
+    # model name            (hr:min:sec)  [........25........50........75..........]  (hr:min:sec)
+    # --------------------  ------------  ------------------------------------------  ------------
+      1a51_motif_2Knotty2       00:00:00  [========================================]      00:00:37
+    #
+    # Calibration summary statistics:
+    #
+    #                           exponential tail fit mu        exponential tail fit lambda         total number of hits      
+    #                       -------------------------------  -------------------------------  -------------------------------
+    # model name            glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins
+    # --------------------  ------- ------- ------- -------  ------- ------- ------- -------  ------- ------- ------- -------
+      1a51_motif_2Knotty2      2.41    2.99    4.55    5.21    0.535   0.517   0.439   0.496   742347  687156  822904  776243
+    #
+    # CPU time: 147.96u 0.17s 00:02:28.13 Elapsed: 00:00:37.65
+    [ok]
+
+[+] Cleaning up...
+[+] All done.
+
+    # cmcalibrate :: fit exponential tails for CM E-values
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_3Knotty2.cm
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #
+    # Calibrating CM(s):
+    #
+    #                        predicted                                                   actual   
+    #                       running time              percent complete                running time
+    # model name            (hr:min:sec)  [........25........50........75..........]  (hr:min:sec)
+    # --------------------  ------------  ------------------------------------------  ------------
+      1a51_motif_3Knotty2       00:00:46  [========================================]      00:01:17
+    #
+    # Calibration summary statistics:
+    #
+    #                           exponential tail fit mu        exponential tail fit lambda         total number of hits      
+    #                       -------------------------------  -------------------------------  -------------------------------
+    # model name            glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins
+    # --------------------  ------- ------- ------- -------  ------- ------- ------- -------  ------- ------- ------- -------
+      1a51_motif_3Knotty2     -4.64   -2.91    3.98    4.94    0.413   0.431   0.631   0.655   378600  302497  524988  439705
+    #
+    # CPU time: 305.97u 0.27s 00:05:06.24 Elapsed: 00:01:17.65
+    [ok]
+
+[+] Searching DB with covariance model... 2500 matches found.
+[+] Removing duplicate sequences... 14 matches left.
+[+] Writing matches to FASTA file
+[+] Aligning matches to covariance model...
+    Output from cmalign:
+
+    # cmalign :: align sequences to a CM
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_3Knotty2.cm
+    # sequence file:                               ./tmp2/1a51_motif_3Knotty2.fasta
+    # CM name:                                     1a51_motif_3Knotty2
+    # saving alignment to file:                    ./tmp2/1a51_motif_3Knotty2.stockholm
+    # posterior probability annotation:            off
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                          running time (s)                 
+    #                                                                   -------------------------------          
+    # idx  seq name  length  cm from    cm to  trunc    bit sc  avg pp  band calc  alignment      total  mem (Mb)
+    # ---  --------  ------  -------  -------  -----  --------  ------  ---------  ---------  ---------  --------
+        1  CP041989      38        1       38     no     59.93       -       0.00       0.00       0.00      0.06
+        2  CP080155      39        1       38     no     56.20       -       0.00       0.00       0.00      0.07
+        3  CP024801      39        1       38     no     56.66       -       0.00       0.00       0.00      0.07
+        4  CP006262      38        1       38     no     56.84       -       0.00       0.00       0.00      0.07
+        5  CP022164      38        1       38     no     56.85       -       0.00       0.00       0.00      0.07
+        6  CP043015      38        1       38     no     56.59       -       0.00       0.00       0.00      0.07
+        7  LM997110      39        1       38     no     55.10       -       0.00       0.00       0.00      0.07
+        8  CP024252      38        1       38     no     57.60       -       0.00       0.00       0.00      0.07
+        9  LM995479      39        1       38     no     56.17       -       0.00       0.00       0.00      0.07
+       10  CP057262      38        1       38     no     56.47       -       0.00       0.00       0.00      0.07
+       11  CP046416      38        1       38     no     56.59       -       0.00       0.00       0.00      0.07
+       12  LM996268      38        1       38     no     48.13       -       0.00       0.00       0.00      0.07
+       13  CP010163      38        1       38     no     56.54       -       0.00       0.00       0.00      0.07
+       14  LM996456      39        1       38     no     48.78       -       0.00       0.00       0.00      0.07
+    #
+    # CPU time: 0.02u 0.01s 00:00:00.03 Elapsed: 00:00:00.02
+
+[+] Building covariance model (iteration 3)...
+    Output from cmbuild:
+
+    # cmbuild :: covariance model construction from multiple sequence alignments
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                            ./tmp2/1a51_motif_3Knotty2.cm
+    # alignment file:                                     ./tmp2/1a51_motif_3Knotty2.stockholm
+    # overwrite CM file if necessary:                     yes
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                      rel entropy
+    #                                                                      -----------
+    # idx    name                     nseq eff_nseq   alen  clen  bps bifs    CM   HMM description
+    # ------ -------------------- -------- -------- ------ ----- ---- ---- ----- ----- -----------
+           1 1a51_motif_3Knotty2        14     5.55     41    38    3    0 1.435 1.409 
+    #
+    # CPU time: 0.05u 0.00s 00:00:00.05 Elapsed: 00:00:00.05
+
+[+] Calibrating covariance model (estimated time: 00 h and 00 min)...
+    Output from cmcalibrate:
+
+    # cmcalibrate :: fit exponential tails for CM E-values
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_3Knotty2.cm
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #
+    # Calibrating CM(s):
+    #
+    #                        predicted                                                   actual   
+    #                       running time              percent complete                running time
+    # model name            (hr:min:sec)  [........25........50........75..........]  (hr:min:sec)
+    # --------------------  ------------  ------------------------------------------  ------------
+      1a51_motif_3Knotty2       00:00:45  [========================================]      00:01:04
+    #
+    # Calibration summary statistics:
+    #
+    #                           exponential tail fit mu        exponential tail fit lambda         total number of hits      
+    #                       -------------------------------  -------------------------------  -------------------------------
+    # model name            glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins
+    # --------------------  ------- ------- ------- -------  ------- ------- ------- -------  ------- ------- ------- -------
+      1a51_motif_3Knotty2     -4.61   -2.94    3.98    4.93    0.413   0.427   0.631   0.656   377995  303434  525749  440529
+    #
+    # CPU time: 256.08u 0.20s 00:04:16.27 Elapsed: 00:01:04.66
+    [ok]
+
+[+] Searching DB with covariance model... 2500 matches found.
+[+] Removing duplicate sequences... 14 matches left.
+[+] Writing matches to FASTA file
+[+] Aligning matches to covariance model...
+    Output from cmalign:
+
+    # cmalign :: align sequences to a CM
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_3Knotty2.cm
+    # sequence file:                               ./tmp2/1a51_motif_3Knotty2.fasta
+    # CM name:                                     1a51_motif_3Knotty2
+    # saving alignment to file:                    ./tmp2/1a51_motif_3Knotty2.stockholm
+    # posterior probability annotation:            off
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                          running time (s)                 
+    #                                                                   -------------------------------          
+    # idx  seq name  length  cm from    cm to  trunc    bit sc  avg pp  band calc  alignment      total  mem (Mb)
+    # ---  --------  ------  -------  -------  -----  --------  ------  ---------  ---------  ---------  --------
+        1  CP065624      38        1       38     no     59.92       -       0.00       0.00       0.00      0.06
+        2  LM995600      39        1       38     no     56.84       -       0.00       0.00       0.00      0.07
+        3  CP044148      38        1       38     no     56.58       -       0.00       0.00       0.00      0.07
+        4  CP026811      39        1       38     no     55.10       -       0.00       0.00       0.00      0.07
+        5  AP022105      39        1       38     no     56.86       -       0.00       0.00       0.00      0.07
+        6  CP046396      38        1       38     no     56.84       -       0.00       0.00       0.00      0.07
+        7  CP061339      39        1       38     no     56.84       -       0.00       0.00       0.00      0.07
+        8  CP086624      38        1       38     no     57.60       -       0.00       0.00       0.00      0.06
+        9  CP027362      38        1       38     no     56.83       -       0.00       0.00       0.00      0.07
+       10  CP046416      38        1       38     no     56.58       -       0.00       0.00       0.00      0.07
+       11  CP057262      38        1       38     no     56.46       -       0.00       0.00       0.00      0.07
+       12  CP010163      38        1       38     no     56.53       -       0.00       0.00       0.00      0.07
+       13  LM996456      39        1       38     no     49.10       -       0.00       0.00       0.00      0.07
+       14  LM996268      38        1       38     no     48.20       -       0.00       0.00       0.00      0.07
+    #
+    # CPU time: 0.02u 0.01s 00:00:00.03 Elapsed: 00:00:00.02
+
+[+] Building final covariance model...
+    Output from cmbuild:
+
+    # cmbuild :: covariance model construction from multiple sequence alignments
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                            ./1a51_motif_3Knotty2.cm
+    # alignment file:                                     ./tmp2/1a51_motif_3Knotty2.stockholm
+    # overwrite CM file if necessary:                     yes
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                      rel entropy
+    #                                                                      -----------
+    # idx    name                     nseq eff_nseq   alen  clen  bps bifs    CM   HMM description
+    # ------ -------------------- -------- -------- ------ ----- ---- ---- ----- ----- -----------
+           1 1a51_motif_3Knotty2        14     5.55     40    38    3    0 1.435 1.409 
+    #
+    # CPU time: 0.05u 0.00s 00:00:00.05 Elapsed: 00:00:00.05
+
+[+] Calibrating final covariance model (may take a while)...
+    Output from cmcalibrate:
+
+    # cmcalibrate :: fit exponential tails for CM E-values
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_1Knotty2.cm
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #
+    # Calibrating CM(s):
+    #
+    #                        predicted                                                   actual   
+    #                       running time              percent complete                running time
+    # model name            (hr:min:sec)  [........25........50........75..........]  (hr:min:sec)
+    # --------------------  ------------  ------------------------------------------  ------------
+      1a51_motif_1Knotty2       00:02:25  [========================================]      00:02:13
+    #
+    # Calibration summary statistics:
+    #
+    #                           exponential tail fit mu        exponential tail fit lambda         total number of hits      
+    #                       -------------------------------  -------------------------------  -------------------------------
+    # model name            glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins
+    # --------------------  ------- ------- ------- -------  ------- ------- ------- -------  ------- ------- ------- -------
+      1a51_motif_1Knotty2     -2.66    0.00    3.49    4.73    0.463   0.514   0.671   0.655   158325  114057  455606  363803
+    #
+    # CPU time: 529.26u 0.95s 00:08:50.21 Elapsed: 00:02:13.56
+    [ok]
+
+[+] Searching DB with covariance model... 2500 matches found.
+[+] Removing duplicate sequences... 6 matches left.
+[+] Writing matches to FASTA file
+[+] Aligning matches to covariance model...
+    Output from cmalign:
+
+    # cmalign :: align sequences to a CM
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_1Knotty2.cm
+    # sequence file:                               ./tmp2/1a51_motif_1Knotty2.fasta
+    # CM name:                                     1a51_motif_1Knotty2
+    # saving alignment to file:                    ./tmp2/1a51_motif_1Knotty2.stockholm
+    # posterior probability annotation:            off
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                          running time (s)                 
+    #                                                                   -------------------------------          
+    # idx  seq name  length  cm from    cm to  trunc    bit sc  avg pp  band calc  alignment      total  mem (Mb)
+    # ---  --------  ------  -------  -------  -----  --------  ------  ---------  ---------  ---------  --------
+        1  CP057167      55        1       55     no     79.66       -       0.00       0.00       0.00      0.11
+        2  CP056947      55        1       55     no     77.45       -       0.00       0.00       0.00      0.11
+        3  LM997084      55        1       55     no     77.41       -       0.00       0.00       0.00      0.11
+        4  LR890349      55        1       55     no     78.13       -       0.00       0.00       0.00      0.11
+        5  CP083869      55        1       55     no     78.42       -       0.00       0.00       0.00      0.11
+        6  LM996347      55        1       55     no     78.68       -       0.00       0.00       0.00      0.11
+    #
+    # CPU time: 0.01u 0.01s 00:00:00.02 Elapsed: 00:00:00.04
+
+[+] Building covariance model (iteration 3)...
+    Output from cmbuild:
+
+    # cmbuild :: covariance model construction from multiple sequence alignments
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                            ./tmp2/1a51_motif_1Knotty2.cm
+    # alignment file:                                     ./tmp2/1a51_motif_1Knotty2.stockholm
+    # overwrite CM file if necessary:                     yes
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                      rel entropy
+    #                                                                      -----------
+    # idx    name                     nseq eff_nseq   alen  clen  bps bifs    CM   HMM description
+    # ------ -------------------- -------- -------- ------ ----- ---- ---- ----- ----- -----------
+           1 1a51_motif_1Knotty2         6     1.91     55    55   14    0 1.010 0.830 
+    #
+    # CPU time: 0.08u 0.00s 00:00:00.08 Elapsed: 00:00:00.08
+
+[+] Calibrating covariance model (estimated time: 00 h and 01 min)...
+    Output from cmcalibrate:
+
+    # cmcalibrate :: fit exponential tails for CM E-values
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./1a51_motif_3Knotty2.cm
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #
+    # Calibrating CM(s):
+    #
+    #                        predicted                                                   actual   
+    #                       running time              percent complete                running time
+    # model name            (hr:min:sec)  [........25........50........75..........]  (hr:min:sec)
+    # --------------------  ------------  ------------------------------------------  ------------
+      1a51_motif_3Knotty2       00:00:45  [========================================]      00:01:04
+    #
+    # Calibration summary statistics:
+    #
+    #                           exponential tail fit mu        exponential tail fit lambda         total number of hits      
+    #                       -------------------------------  -------------------------------  -------------------------------
+    # model name            glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins
+    # --------------------  ------- ------- ------- -------  ------- ------- ------- -------  ------- ------- ------- -------
+      1a51_motif_3Knotty2     -4.68   -2.99    3.98    4.92    0.420   0.443   0.630   0.651   378855  305618  525689  440568
+    #
+    # CPU time: 255.36u 0.20s 00:04:15.56 Elapsed: 00:01:04.55
+    [ok]
+
+[+] Cleaning up...
+[+] All done.
+
+    # cmcalibrate :: fit exponential tails for CM E-values
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_1Knotty2.cm
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #
+    # Calibrating CM(s):
+    #
+    #                        predicted                                                   actual   
+    #                       running time              percent complete                running time
+    # model name            (hr:min:sec)  [........25........50........75..........]  (hr:min:sec)
+    # --------------------  ------------  ------------------------------------------  ------------
+      1a51_motif_1Knotty2       00:02:25  [========================================]      00:02:00
+    #
+    # Calibration summary statistics:
+    #
+    #                           exponential tail fit mu        exponential tail fit lambda         total number of hits      
+    #                       -------------------------------  -------------------------------  -------------------------------
+    # model name            glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins
+    # --------------------  ------- ------- ------- -------  ------- ------- ------- -------  ------- ------- ------- -------
+      1a51_motif_1Knotty2     -2.66    0.00    3.49    4.73    0.463   0.514   0.671   0.655   158325  114057  455606  363803
+    #
+    # CPU time: 478.91u 0.88s 00:07:59.79 Elapsed: 00:02:00.79
+    [ok]
+
+[+] Searching DB with covariance model... 2500 matches found.
+[+] Removing duplicate sequences... 6 matches left.
+[+] Writing matches to FASTA file
+[+] Aligning matches to covariance model...
+    Output from cmalign:
+
+    # cmalign :: align sequences to a CM
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./tmp2/1a51_motif_1Knotty2.cm
+    # sequence file:                               ./tmp2/1a51_motif_1Knotty2.fasta
+    # CM name:                                     1a51_motif_1Knotty2
+    # saving alignment to file:                    ./tmp2/1a51_motif_1Knotty2.stockholm
+    # posterior probability annotation:            off
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                          running time (s)                 
+    #                                                                   -------------------------------          
+    # idx  seq name  length  cm from    cm to  trunc    bit sc  avg pp  band calc  alignment      total  mem (Mb)
+    # ---  --------  ------  -------  -------  -----  --------  ------  ---------  ---------  ---------  --------
+        1  CP024821      55        1       55     no     79.66       -       0.00       0.00       0.00      0.11
+        2  LM997382      55        1       55     no     77.41       -       0.00       0.00       0.00      0.11
+        3  LR890349      55        1       55     no     78.13       -       0.00       0.00       0.00      0.11
+        4  LT599825      55        1       55     no     77.45       -       0.00       0.00       0.00      0.11
+        5  CP085372      55        1       55     no     78.42       -       0.00       0.00       0.00      0.11
+        6  LM996347      55        1       55     no     78.68       -       0.00       0.00       0.00      0.11
+    #
+    # CPU time: 0.02u 0.01s 00:00:00.03 Elapsed: 00:00:00.02
+
+[+] Building final covariance model...
+    Output from cmbuild:
+
+    # cmbuild :: covariance model construction from multiple sequence alignments
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                            ./1a51_motif_1Knotty2.cm
+    # alignment file:                                     ./tmp2/1a51_motif_1Knotty2.stockholm
+    # overwrite CM file if necessary:                     yes
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #                                                                      rel entropy
+    #                                                                      -----------
+    # idx    name                     nseq eff_nseq   alen  clen  bps bifs    CM   HMM description
+    # ------ -------------------- -------- -------- ------ ----- ---- ---- ----- ----- -----------
+           1 1a51_motif_1Knotty2         6     1.91     55    55   14    0 1.010 0.830 
+    #
+    # CPU time: 0.07u 0.00s 00:00:00.07 Elapsed: 00:00:00.08
+
+[+] Calibrating final covariance model (may take a while)...
+    Output from cmcalibrate:
+
+    # cmcalibrate :: fit exponential tails for CM E-values
+    # INFERNAL 1.1.4 (Dec 2020)
+    # Copyright (C) 2020 Howard Hughes Medical Institute.
+    # Freely distributed under the BSD open source license.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # CM file:                                     ./1a51_motif_1Knotty2.cm
+    # number of worker threads:                    4 [--cpu]
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    #
+    # Calibrating CM(s):
+    #
+    #                        predicted                                                   actual   
+    #                       running time              percent complete                running time
+    # model name            (hr:min:sec)  [........25........50........75..........]  (hr:min:sec)
+    # --------------------  ------------  ------------------------------------------  ------------
+      1a51_motif_1Knotty2       00:02:25  [========================================]      00:01:59
+    #
+    # Calibration summary statistics:
+    #
+    #                           exponential tail fit mu        exponential tail fit lambda         total number of hits      
+    #                       -------------------------------  -------------------------------  -------------------------------
+    # model name            glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins  glc cyk glc ins loc cyk loc ins
+    # --------------------  ------- ------- ------- -------  ------- ------- ------- -------  ------- ------- ------- -------
+      1a51_motif_1Knotty2     -2.66    0.00    3.49    4.73    0.463   0.514   0.671   0.655   158325  114057  455606  363803
+    #
+    # CPU time: 472.67u 0.92s 00:07:53.59 Elapsed: 00:01:59.26
+    [ok]
+
+[+] Cleaning up...
+[+] All done.
+

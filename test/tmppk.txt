@@ -1,0 +1,60 @@
+>>1a51_motif_3_coordinates:326-344_zscore=-2.93 ScanFold
+ACUAAUGAACCGUGAGGCUUAACCUUACAACGCCGAAGAUGUUUUGGCGGAUGAGAGAAGAUUUUCAGCCUGAUACAGA
+..............................(((((((.....)))))))..............................
+>>1a51_motif_3_coordinates:326-344_zscore=-2.93 Knotty
+Seq: ACUAAUGAACCGUGAGGCUUAACCUUACAACGCCGAAGAUGUUUUGGCGGAUGAGAGAAGAUUUUCAGCCUGAUACAGA
+RES: ...........((.((((((...(((.((.(((((((..[[[)))))))..)).)))...).....))))).))]]]..  -10.52
+>>1a51_motif_3_coordinates:326-344_zscore=-2.93 HFold
+method1
+method2
+method3
+method4
+Seq: ACUAAUGAACCGUGAGGCUUAACCUUACAACGCCGAAGAUGUUUUGGCGGAUGAGAGAAGAUUUUCAGCCUGAUACAGA
+RES: ...........[[[[[[.....]]]]]]..[[[[[[[[...]]]]]]]]..[[[[[[....]]]]]]............  -9.64
+>>1a51_motif_3_coordinates:326-344_zscore=-2.93 HFold ScanFold
+method1
+method2
+method3
+method4
+Seq: ACUAAUGAACCGUGAGGCUUAACCUUACAACGCCGAAGAUGUUUUGGCGGAUGAGAGAAGAUUUUCAGCCUGAUACAGA
+RES: ...........[[[[[[.....]]]]]]..((((((([...])))))))..[[[[[[....]]]]]]............  -9.64
+>>1a51_motif_2_coordinates:307-323_zscore=-3.69 ScanFold
+AUGCGUUGAGCUAACCGGUACUAAUGAACCGUGAGGCUUAACCUUACAACGCCGAAGAUGUUUUGGCGGAUGAGAGA
+..............................((((((.....))))))..............................
+>>1a51_motif_2_coordinates:307-323_zscore=-3.69 Knotty
+Seq: AUGCGUUGAGCUAACCGGUACUAAUGAACCGUGAGGCUUAACCUUACAACGCCGAAGAUGUUUUGGCGGAUGAGAGA
+RES: ....((((((((...((((........))))...))))))))...(((.[[[[[[[..)))]]]]]]].........  -15.20
+>>1a51_motif_2_coordinates:307-323_zscore=-3.69 HFold
+method1
+method2
+method3
+method4
+Seq: AUGCGUUGAGCUAACCGGUACUAAUGAACCGUGAGGCUUAACCUUACAACGCCGAAGAUGUUUUGGCGGAUGAGAGA
+RES: ....[[[[[[[[...[[[[........]]]]...]]]]]]]][[[.[[.[[[[[[[[...]]]]]]]]..]].]]].  -14.47
+>>1a51_motif_2_coordinates:307-323_zscore=-3.69 HFold ScanFold
+method1
+method2
+method3
+method4
+Seq: AUGCGUUGAGCUAACCGGUACUAAUGAACCGUGAGGCUUAACCUUACAACGCCGAAGAUGUUUUGGCGGAUGAGAGA
+RES: ..[[.....]].....[[[........]]]((((((.....))))))..[[[[[[[[...]]]]]]]].........  -9.79
+>>1a51_motif_1_coordinates:293-306_zscore=-1.0 ScanFold
+GUGUAAGCGCAGCGAUGCGUUGAGCUAACCGGUACUAAUGAACCGUGAGGCUUAACCUUACAACGCCGAAGAUG
+..............................(((.(....).)))..............................
+>>1a51_motif_1_coordinates:293-306_zscore=-1.0 Knotty
+Seq: GUGUAAGCGCAGCGAUGCGUUGAGCUAACCGGUACUAAUGAACCGUGAGGCUUAACCUUACAACGCCGAAGAUG
+RES: .(((((((((([[[.))))[[[[[[[...[[[[........]]]]...]]]]]]].)))))).]]]........  -13.65
+>>1a51_motif_1_coordinates:293-306_zscore=-1.0 HFold
+method1
+method2
+method3
+method4
+Seq: GUGUAAGCGCAGCGAUGCGUUGAGCUAACCGGUACUAAUGAACCGUGAGGCUUAACCUUACAACGCCGAAGAUG
+RES: .[[[[[[[[[[....]]]][[[[[[[...[[[[........]]]]...]]]]]]].]]]]]]............  -12.72
+>>1a51_motif_1_coordinates:293-306_zscore=-1.0 HFold ScanFold
+method1
+method2
+method3
+method4
+Seq: GUGUAAGCGCAGCGAUGCGUUGAGCUAACCGGUACUAAUGAACCGUGAGGCUUAACCUUACAACGCCGAAGAUG
+RES: .[[[[[[[[[[....]]]][[[[[[[...[(((.(....).)))]...]]]]]]].]]]]]]............  -12.28
