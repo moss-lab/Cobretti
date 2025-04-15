@@ -252,7 +252,7 @@ def main():
         # Prepare cm-builder files, stage 1BC1 will NOT run them
         is_stage = True
         logging.info('Preparing cm-builder scripts...')
-        cmbuilder_prep(sequence_directory, database_directory, pk_directory, cmbuilder_program, email, rscape_program,
+        cmbuilder_prep(sequence_directory, database_directory, pk_directory, cmbuilder_program, email, rscape_program, rscape_environment,
                        r2r_program,
                        cobretti_program, perl_program, rnaframework_directory)
 
@@ -1118,7 +1118,7 @@ def pk_splitter(dbn_directory, dbn_filename, dbn_header, dbn_sequence, dbn_struc
             writefile.writelines(dbn_structure4)
 
 
-def cmbuilder_prep(sequence_directory, database_directory, dbn_directory, cmbuilder_program, email, rscape_program,
+def cmbuilder_prep(sequence_directory, database_directory, dbn_directory, cmbuilder_program, email, rscape_program, rscape_environment,
                    r2r_program, cobretti_program, perl_program, rnaframework_directory, cm_writefile='cmbuilder'):
     # Reads all DBN files and outputs a shell script for cm-builder, based on Van's code
     count = 1
