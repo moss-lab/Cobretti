@@ -1184,7 +1184,7 @@ def cmbuilder_prep(sequence_directory, database_directory, dbn_directory, cmbuil
     # Prepare R-Scape shell script
     with open('rscape.sh', 'a', newline='\n') as writefile:
         rscape_runs = 10
-        writefile.writelines(f"micromamba activate {rscape_environment}")
+        writefile.writelines(f"micromamba activate {rscape_environment}\n")
         writefile.writelines(f'for f in *.stockholm; do {rscape_program} -s --ntree {rscape_runs} $f; done\n')
         # Back up Stockholm files, then delete lines that error out R2R
         writefile.writelines('sed -i.bak "/#=GF R2R*/d" *.sto\n')
