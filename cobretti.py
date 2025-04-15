@@ -394,7 +394,6 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
             writefile.writelines('module load infernal\n')
         elif job.startswith('rscape'):
             writefile.writelines('module load micromamba\n')
-            writefile.writelines(f'micromamba activate {rscape_environment} \n')
         elif job.startswith('qrnas'):
             writefile.writelines('module load gcc\n')
         elif job.startswith('ares'):
@@ -441,7 +440,7 @@ def scanfold2_prep(sequence_directory, scanfold2_directory, scanfold2_environmen
         with open(f'scanfold2_{name}.sh', 'a', newline='\n') as writefile:
             writefile.writelines(f'micromamba activate {scanfold2_environment}\n')
             writefile.writelines('wait;\n')
-            writefile.writelines(f'python {scanfold2_directory} {filepath} --folder_name {name} --global_refold &\n')
+            writefile.writelines(f'python {scanfold2_directory} {filepath} --folder_name {name} &\n')
             writefile.writelines('wait;\n')
 
 
@@ -1185,6 +1184,7 @@ def cmbuilder_prep(sequence_directory, database_directory, dbn_directory, cmbuil
     # Prepare R-Scape shell script
     with open('rscape.sh', 'a', newline='\n') as writefile:
         rscape_runs = 10
+        writefile.writelines(f"micromamba activate {rscape_environment}")
         writefile.writelines(f'for f in *.stockholm; do {rscape_program} -s --ntree {rscape_runs} $f; done\n')
         # Back up Stockholm files, then delete lines that error out R2R
         writefile.writelines('sed -i.bak "/#=GF R2R*/d" *.sto\n')
