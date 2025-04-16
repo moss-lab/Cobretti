@@ -1185,13 +1185,13 @@ def cmbuilder_prep(sequence_directory, database_directory, dbn_directory, cmbuil
     with open('rscape.sh', 'a', newline='\n') as writefile:
         rscape_runs = 10
         writefile.writelines(f"micromamba activate {rscape_environment}\n")
-        writefile.writelines(f'for f in *.stockholm; do {rscape_program} -s --ntree {rscape_runs} $f; done\n')
+        writefile.writelines(f'for f in *.\"stockholm\"; do {rscape_program} -s --ntree {rscape_runs} $f; done\n')
         # Back up Stockholm files, then delete lines that error out R2R
-        writefile.writelines('sed -i.bak "/#=GF R2R*/d" *.sto\n')
+        writefile.writelines('sed -i.bak "/#=GF R2R*/d" *.\"sto\"\n')
         writefile.writelines(
-            f'for g in *.sto; do {r2r_program} --disable-usage-warning $g $(basename $g sto)pdf; done\n')
+            f'for g in *.\"sto\"; do {r2r_program} --disable-usage-warning $g $(basename $g sto)pdf; done\n')
         # Write all R2R outputs to a single PDF
-        writefile.writelines('gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=All.Rscape.pdf -dBATCH *.R2R.pdf\n')
+        writefile.writelines('gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=All.Rscape.pdf -dBATCH *.\"R2R.pdf\"\n')
         writefile.writelines('wait;\n')
         # Since code is linear, automatically start the next substage
         writefile.writelines(f'python {cobretti_program} -stage 1CA -email {email} &\n')
