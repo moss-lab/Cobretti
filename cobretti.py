@@ -41,24 +41,24 @@ import time
 current_directory = Path.cwd()
 
 # Program default locations
-COBRETTI = Path('/work/LAS/wmoss-lab/scripts/cobretti.py')
-SCANFOLD_1 = Path('/work/LAS/wmoss-lab/scripts/ScanFold.py')
-SCANFOLD_2 = Path('/work/LAS/wmoss-lab/scripts/ScanFold2.0-inforna/ScanFoldBothForInforna.py')
-SCANFOLD_2_ENV = Path('/work/LAS/wmoss-lab/programs/envs/ScanFold2')
-CMBUILDER = Path('/work/LAS/wmoss-lab/scripts/labtools/cm-builder')
-RSCAPE = Path('/work/LAS/wmoss-lab/programs/rscape_v2.0.0.k/bin/R-scape')
-R2R = Path('/work/LAS/wmoss-lab/programs/R2R-1.0.6/src/r2r')
-PERL = Path('/work/LAS/wmoss-lab/programs/lib/perl5/')
-RNAFRAMEWORK = Path('/work/LAS/wmoss-lab/programs/RNAFramework/lib/')
-KNOTTY = Path('/work/LAS/wmoss-lab/programs/knotty/knotty')
-HFOLD = Path('/work/LAS/wmoss-lab/programs/hfold/HFold_iterative')
-SIMRNA = Path('/work/LAS/wmoss-lab/programs/SimRNA')
-QRNAS = Path('/work/LAS/wmoss-lab/programs/qrnas/QRNA')
-QRNAS_FF = Path('/work/LAS/wmoss-lab/programs/qrnas/forcefield')
-ARES = Path('/work/LAS/wmoss-lab/programs/ares')
-ARES_ENV = Path('/work/LAS/wmoss-lab/programs/envs/ares')
-FPOCKET = Path('/work/LAS/wmoss-lab/programs/fpocket2/bin/fpocket')
-
+COBRETTI = Path('/lustre/hdd/LAS/wmoss-lab/ecoppen/benchmarks/cobretti_nova/Cobretti/cobretti.py')
+SCANFOLD_1 = Path('/lustre/hdd/LAS/wmoss-lab/scripts/ScanFold.py')
+SCANFOLD_2 = Path('/lustre/hdd/LAS/wmoss-lab/scripts/ScanFold2.0-inforna/ScanFoldBothForInforna.py')
+SCANFOLD_2_ENV = Path('/lustre/hdd/LAS/wmoss-lab/programs/envs/ScanFold2')
+CMBUILDER = Path('/lustre/hdd/LAS/wmoss-lab/scripts/labtools/cm-builder')
+RSCAPE = Path('/lustre/hdd/LAS/wmoss-lab/programs/rscape_v2.5.6/bin/R-scape')
+R2R = Path('/lustre/hdd/LAS/wmoss-lab/programs/R2R-1.0.6/src/r2r')
+PERL = Path('/lustre/hdd/LAS/wmoss-lab/programs/lib/perl5/')
+RNAFRAMEWORK = Path('/lustre/hdd/LAS/wmoss-lab/programs/RNAFramework/lib/')
+KNOTTY = Path('/lustre/hdd/LAS/wmoss-lab/programs/knotty/knotty')
+HFOLD = Path('/lustre/hdd/LAS/wmoss-lab/programs/hfold_nova/HFold_iterative')
+SIMRNA = Path('/lustre/hdd/LAS/wmoss-lab/programs/SimRNA')
+QRNAS = Path('/lustre/hdd/LAS/wmoss-lab/programs/qrnas/QRNA')
+QRNAS_FF = Path('/lustre/hdd/LAS/wmoss-lab/programs/qrnas/forcefield')
+ARES = Path('/lustre/hdd/LAS/wmoss-lab/programs/ares')
+ARES_ENV = Path('/lustre/hdd/LAS/wmoss-lab/programs/envs/ares')
+FPOCKET = Path('/lustre/hdd/LAS/wmoss-lab/programs/fpocket2/bin/fpocket')
+RSCAPE_ENV = Path('/lustre/hdd/LAS/wmoss-lab/programs/envs/rscape_nova')
 
 def main():
     parser = argparse.ArgumentParser()
@@ -91,11 +91,13 @@ def main():
     parser.add_argument('-sf2', type=str, default=SCANFOLD_2,
                         help='input location of ScanFold2.0.py')
     parser.add_argument('--sf2env', type=str, default=SCANFOLD_2_ENV,
-                        help='input location of ScanFold2.0 conda environment')
+                        help='input location of ScanFold2.0 mamba environment')
     parser.add_argument('-cmb', type=str, default=CMBUILDER,
                         help='input location of cm-builder')
     parser.add_argument('-rs', type=str, default=RSCAPE,
                         help='input location of R-Scape')
+    parser.add_argument('--rsenv', type=str, default=RSCAPE_ENV,
+                        help='input location of r-scape mamba environment')
     parser.add_argument('-r2r', type=str, default=R2R,
                         help='input location of R2R')
     parser.add_argument('-perl', type=str, default=PERL,
@@ -115,7 +117,7 @@ def main():
     parser.add_argument('-ares', type=str, default=ARES,
                         help='input location of ARES')
     parser.add_argument('-aresenv', type=str, default=ARES_ENV,
-                        help='input location of ARES conda environment')
+                        help='input location of ARES mamba environment')
     parser.add_argument('-fpocket', type=str, default=FPOCKET,
                         help='input location of fpocket')
 
@@ -135,6 +137,7 @@ def main():
     scanfold2_environment = args.sf2env
     cmbuilder_program = args.cmb
     rscape_program = args.rs
+    rscape_environment = args.rsenv
     r2r_program = args.r2r
     perl_program = args.perl
     rnaframework_directory = args.rf
@@ -249,7 +252,7 @@ def main():
         # Prepare cm-builder files, stage 1BC1 will NOT run them
         is_stage = True
         logging.info('Preparing cm-builder scripts...')
-        cmbuilder_prep(sequence_directory, database_directory, pk_directory, cmbuilder_program, email, rscape_program,
+        cmbuilder_prep(sequence_directory, database_directory, pk_directory, cmbuilder_program, email, rscape_program, rscape_environment,
                        r2r_program,
                        cobretti_program, perl_program, rnaframework_directory)
 
@@ -363,7 +366,6 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
     # Build shell scripts with Pronto/HPC settings and modules
     with open(filename, 'w', newline='\n') as writefile:
         writefile.writelines('#!/bin/bash -l\n')
-        writefile.writelines('#SBATCH --partition=biocrunch\n')  # Partition to submit to
         writefile.writelines(f'#SBATCH --time={time}-00:00:00\n')  # Time limit for this job in days
         writefile.writelines(f'#SBATCH --nodes={nodes}\n')  # Nodes to be used for this job during runtime
         if mem != 0:
@@ -377,30 +379,27 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
         if job.startswith('scanfold2'):
             writefile.writelines('#SBATCH --export=NONE\n\n')
             writefile.writelines('module purge\n')
-            writefile.writelines('module load miniconda3\n')
+            writefile.writelines('module load micromamba\n')
         elif job.startswith('scanfold1'):
             writefile.writelines('module use /opt/rit/spack-modules/lmod/linux-rhel7-x86_64/Core\n')
             writefile.writelines('module load py-biopython/1.70-py3-wos466g\n')
             writefile.writelines('module load python/3.6.5-fwk5uaj\n')
         elif job.startswith('blast'):
-            writefile.writelines('module load ncbi-blast-db/latest\n')
-            writefile.writelines('echo ${NCBI_BLAST_DB_PATH}: /work/LAS/BioDatabase/ncbi/blast-db/latest\n')
+            writefile.writelines('module load ncbi-rmblastn\n')
+            writefile.writelines('echo ${NCBI_BLAST_DB_PATH}: /lustre/hdd/LAS/BioDatabase/ncbi/blast-db/latest\n')
             writefile.writelines('module load blast-plus\n')
-            writefile.writelines('export BLASTDB=${NCBI_BLAST_DB_PATH}\n')
+            writefile.writelines('export BLASTDB=/lustre/hdd/LAS/BioDatabase/ncbi/blast-db/latest\n')
         elif job.startswith('cmbuilder'):
             writefile.writelines('module load perl\n')
             writefile.writelines('module load infernal\n')
         elif job.startswith('rscape'):
-            writefile.writelines('module load py-biopython\n')
-            writefile.writelines('module load gcc\n')
-            writefile.writelines('module load ghostscript\n')
-            writefile.writelines('module load gnuplot\n')
+            writefile.writelines('module load micromamba\n')
         elif job.startswith('qrnas'):
             writefile.writelines('module load gcc\n')
         elif job.startswith('ares'):
             writefile.writelines('#SBATCH --export=NONE\n\n')
             writefile.writelines('module purge\n')
-            writefile.writelines('module load miniconda3\n')
+            writefile.writelines('module load micromamba\n')
         else:
             writefile.writelines('module load py-biopython\n')
             writefile.writelines('module load python\n')
@@ -439,9 +438,9 @@ def scanfold2_prep(sequence_directory, scanfold2_directory, scanfold2_environmen
             logging.debug(f'ScanFold 2.0 generic filename: {name}')
         shell_build_start(f'scanfold2_{name}.sh', f'scanfold2_{name}', email, mem=10, notify='END,FAIL')
         with open(f'scanfold2_{name}.sh', 'a', newline='\n') as writefile:
-            writefile.writelines(f'conda activate {scanfold2_environment}\n')
+            writefile.writelines(f'micromamba activate {scanfold2_environment}\n')
             writefile.writelines('wait;\n')
-            writefile.writelines(f'python {scanfold2_directory} {filepath} --folder_name {name} --global_refold &\n')
+            writefile.writelines(f'python {scanfold2_directory} {filepath} --folder_name {name} &\n')
             writefile.writelines('wait;\n')
 
 
@@ -1119,7 +1118,7 @@ def pk_splitter(dbn_directory, dbn_filename, dbn_header, dbn_sequence, dbn_struc
             writefile.writelines(dbn_structure4)
 
 
-def cmbuilder_prep(sequence_directory, database_directory, dbn_directory, cmbuilder_program, email, rscape_program,
+def cmbuilder_prep(sequence_directory, database_directory, dbn_directory, cmbuilder_program, email, rscape_program, rscape_environment,
                    r2r_program, cobretti_program, perl_program, rnaframework_directory, cm_writefile='cmbuilder'):
     # Reads all DBN files and outputs a shell script for cm-builder, based on Van's code
     count = 1
@@ -1185,13 +1184,14 @@ def cmbuilder_prep(sequence_directory, database_directory, dbn_directory, cmbuil
     # Prepare R-Scape shell script
     with open('rscape.sh', 'a', newline='\n') as writefile:
         rscape_runs = 10
-        writefile.writelines(f'for f in *.stockholm; do {rscape_program} -s --ntree {rscape_runs} $f; done\n')
+        writefile.writelines(f"micromamba activate {rscape_environment}\n")
+        writefile.writelines(f'for f in *.\"stockholm\"; do {rscape_program} -s --ntree {rscape_runs} $f; done\n')
         # Back up Stockholm files, then delete lines that error out R2R
-        writefile.writelines('sed -i.bak "/#=GF R2R*/d" *.sto\n')
+        writefile.writelines('sed -i.bak "/#=GF R2R*/d" *.\"sto\"\n')
         writefile.writelines(
-            f'for g in *.sto; do {r2r_program} --disable-usage-warning $g $(basename $g sto)pdf; done\n')
+            f'for g in *.\"sto\"; do {r2r_program} --disable-usage-warning $g $(basename $g sto)pdf; done\n')
         # Write all R2R outputs to a single PDF
-        writefile.writelines('gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=All.Rscape.pdf -dBATCH *.R2R.pdf\n')
+        writefile.writelines('gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=All.Rscape.pdf -dBATCH *.\"R2R.pdf\"\n')
         writefile.writelines('wait;\n')
         # Since code is linear, automatically start the next substage
         writefile.writelines(f'python {cobretti_program} -stage 1CA -email {email} &\n')
@@ -1524,7 +1524,7 @@ def ares_prep(working_directory, ares_directory, ares_environment, email):
     qrnas_directory = folder_check(working_directory, 'qrnas_models')
     shell_build_start('ares.sh', 'ares', email, nodes=8, mem=10, notify='END,FAIL')
     with open('ares.sh', 'a', newline='\n') as writefile:
-        writefile.writelines(f'conda activate {ares_environment}\nwait;\n')
+        writefile.writelines(f'micromamba activate {ares_environment}\nwait;\n')
         writefile.writelines(f'cd {ares_directory}\n')
         writefile.writelines(
             f'python -m ares.predict {qrnas_directory} data/epoch=0-step=874.ckpt {working_directory}/ares.csv -f pdb '
