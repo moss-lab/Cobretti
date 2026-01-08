@@ -386,9 +386,9 @@ def shell_build_start(filename, job, email, time=3, nodes=1, mem=0, tasks=1, not
             writefile.writelines('module load python/3.6.5-fwk5uaj\n')
         elif job.startswith('blast'):
             writefile.writelines('module load ncbi-rmblastn\n')
-            writefile.writelines('echo ${NCBI_BLAST_DB_PATH}: /lustre/hdd/LAS/BioDatabase/ncbi/blast-db/latest\n')
+            writefile.writelines('echo ${NCBI_BLAST_DB_PATH}: /lustre/hdd/BioDatabase/ncbi/blast/nt/current\n')
             writefile.writelines('module load blast-plus\n')
-            writefile.writelines('export BLASTDB=/lustre/hdd/LAS/BioDatabase/ncbi/blast-db/latest\n')
+            writefile.writelines('export BLASTDB=/lustre/hdd/BioDatabase/ncbi/blast/nt/current\n')
         elif job.startswith('cmbuilder'):
             writefile.writelines('module load perl\n')
             writefile.writelines('module load infernal\n')
@@ -1630,3 +1630,4 @@ if __name__ == "__main__":
                         level=logging.INFO)
     main()
     logging.info('Cobretti run completed successfully!')
+
